@@ -585,7 +585,7 @@ export function sliceOne(settings, widget, onupdate, ondone) {
         }
 
         // perform accumulation top down
-        for (let slice of stack.reverse()) {
+        for (let slice of stack.slice().reverse()) {
             let shadow = slice.shadow ?? [];
             if (devel) slice.output().setLayer("shadow", 0xff0000).addPolys(shadow);
             if (process.sliceSupportExtra) {
@@ -628,7 +628,7 @@ export function sliceOne(settings, widget, onupdate, ondone) {
 
         // trim using support part offset value
         let gaps = process.sliceSupportGap;
-        for (let slice of stack.reverse()) {
+        for (let slice of stack) {
             let clips = [
                 slice.clips,
                 gaps ? slice.up?.clips : undefined,
@@ -1162,6 +1162,7 @@ export function slicePost(settings, onupdate) {
     // assign grid_id which can be embedded in gcode and
     // used by the controller to cancel objects during print
     let { bounds } = settings;
+    if (!bounds) return;
     for (let widget of widgets) {
         let { pos, box } = widget.track;
         // calculate top/left coordinate for widget

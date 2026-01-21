@@ -26,6 +26,7 @@ class Engine {
             client.setWorkPath(workURL);
             client.setPoolPath(poolURL);
             client.restart();
+            client.pool.start();
         } catch (error) {
             console.log({ error });
         }
@@ -63,11 +64,8 @@ class Engine {
     }
 
     setThreading(bool) {
-        if (bool) {
-            client.pool.start();
-        } else {
-            client.pool.stop();
-        }
+        console.log('setThreading() deprecated');
+        return this;
     }
 
     setListener(listener) {
@@ -163,6 +161,7 @@ class Engine {
             client.clear();
             client.sync([this.widget]);
             client.rotate(this.settings);
+            client.slicePre(this.settings, () => {});
             client.slice(this.settings, this.widget, msg => {
                 this.listener({ slice: msg });
                 if (msg.error) {
@@ -170,6 +169,7 @@ class Engine {
                 }
                 if (msg.done) {
                     accept(this);
+                    client.slicePost(this.settings, () => {});
                 }
             });
         });
