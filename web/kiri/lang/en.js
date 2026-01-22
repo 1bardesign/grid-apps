@@ -504,6 +504,8 @@ self.lang['en-us'] = {
     cc_thru_l:      ["allow trace depth to extend thru","the bottom of the selected area","use with negative Z bottom"],
     cc_offd_s:      "offset",
     cc_offd_l:      ["overrides default offset distance (which is the tool radius) when set to any value but zero"],
+    cc_offz_s:      "offset z",
+    cc_offz_l:      ["shift add or subtract Z values by this amount","in workspace units"],
     cc_feed_s:      "feed rate",
     cc_feed_l:      ["max cutting speed in","workspace units / minute"],
     cc_plng_s:      "plunge rate",

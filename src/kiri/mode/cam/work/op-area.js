@@ -256,10 +256,11 @@ class OpArea extends CamOp {
                 progress(proc, 'clear');
             } else
             if (mode === 'trace') {
-                let { tr_over, tr_type  } = op;
+                let { tr_over, tr_offz, tr_type  } = op;
                 let zs = down ? base_util.lerp(zTop, op.thru ? zBottom : Math.max(zBottom, area.minZ()), down) : [ bounds.min.z ];
                 let zroc = 0;
                 let zinc = 1 / zs.length;
+                if (tr_offz) zs = zs.map(z => z - tr_offz);
                 for (let z of zs) {
                     let slice = newLayer(z);
                     let layers = slice.output();

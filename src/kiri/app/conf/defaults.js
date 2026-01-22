@@ -608,6 +608,7 @@ export const conf = {
                 camTraceLines: false,
                 camTraceMerge: false,
                 camTraceOffOver: 0,
+                camTraceOffZ: 0,
                 camTraceOffset: "none",
                 camTraceOver: 0.5,
                 camTracePlunge: 200,
