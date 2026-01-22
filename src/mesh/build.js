@@ -404,7 +404,7 @@ function ui_build() {
                 menu_item('Slicer', api.kirimoto),
                 menu_item('Script', api.script.toggle),
                 hr(),
-                menu_item('Close', window.close),
+                menu_item('Close', () => window.close() || api.kirimoto()),
             ])
         ]),
         div({ class: "menu sketch-on" }, [
