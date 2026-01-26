@@ -5,7 +5,7 @@
     "bedWidth": 300,
     "bedDepth": 200,
     "originCenter": false,
-    "spindleMax": 20000,
+    "spindleMax": 13000,
     "gcodePre": [
         "G21 ; set units to MM (required)",
         "G90 ; absolute position mode (required)",
