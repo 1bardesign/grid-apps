@@ -626,6 +626,26 @@ export function sliceOne(settings, widget, onupdate, ondone) {
             trackupdate((++count/length), div[1].lo, div[1].hi, "support");
         }
 
+        // TODO layerDiff shadows to identify tops/bottoms of pillars
+        if (false) {
+        let ps = [];
+        for (let slice of stack.slice().reverse()) {
+            let { supports } = slice;
+            let supportsDown = slice.down ? slice.down.supports : [];
+            let bridges = [], flats = [];
+            slice.supportsDiff = { bridges, flats };
+            ps.push(self.kiri_worker.minions
+                .subtract({
+                    a: supports, b: supportsDown,
+                    outA: bridges, outB: flats,
+                    area: 1, wasm: true, z: slice.z,
+                })
+            );
+        }
+        await Promise.all(ps);
+        console.log({ slices: slices.map(s => s.supportsDiff) });
+        }
+
         // trim using support part offset value
         let gaps = process.sliceSupportGap;
         for (let slice of stack) {
