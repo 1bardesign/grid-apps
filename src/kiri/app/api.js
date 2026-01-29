@@ -40,6 +40,8 @@ import { visuals } from './visuals.js';
 import { widgets } from './widgets.js';
 import { workspace } from './workspace.js';
 
+import { OPFS } from '../../moto/opfs.js';
+
 // environment setup
 let LOC = self.location,
     EVENT = broker,
@@ -228,6 +230,7 @@ export const api = {
     onkey(fn) {
         api.feature.on_key2.push(fn);
     },
+    opfs: OPFS,
     platform,
     process: processModule,
     sdb: dataLocal,
