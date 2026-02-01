@@ -29,7 +29,7 @@ async function appendExtraModules(extras, outfile, minify = false) {
             const result = await transform(code, {
                 minify: true,
                 loader: 'js',
-                target: 'es2020',
+                target: 'es2022',
             });
             return result.code;
         })
@@ -92,7 +92,7 @@ const rec = {
     minify: isProd,      // false for dev, true for prod
     platform: 'browser',
     sourcemap: false,
-    target: 'es2020',
+    target: 'es2022',
 };
 
 async function buildApp() {
