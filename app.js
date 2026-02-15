@@ -134,10 +134,12 @@ function init(mod) {
         "/boot"            : redir((pre??"") + "/boot/", 301),
         "/kiri"            : redir((pre??"") + "/kiri/", 301),
         "/mesh"            : redir((pre??"") + "/mesh/", 301),
-        "/meta"            : redir((pre??"") + "/meta/", 301),
+        "/void"            : redir((pre??"") + "/void/", 301),
+        "/form"            : redir((pre??"") + "/form/", 301),
         "/kiri/index.html" : redir((pre??"") + "/kiri/", 301),
         "/mesh/index.html" : redir((pre??"") + "/mesh/", 301),
-        "/meta/index.html" : redir((pre??"") + "/meta/", 301)
+        "/void/index.html" : redir((pre??"") + "/void/", 301),
+        "/form/index.html" : redir((pre??"") + "/form/", 301)
     }));
     mod.add(handleVersion);
     mod.add(fixedmap("/api/", api));
@@ -153,12 +155,15 @@ function init(mod) {
     mod.static("/lib/", "alt");
     mod.static("/lib/", "src");
     mod.static("/obj/", "web/obj");
-    mod.static("/font/", "web/font");
+    mod.static("/boot/", "web/boot");
     mod.static("/fon2/", "web/fon2");
+    mod.static("/font/", "web/font");
+    mod.static("/form/", "web/void");
+    mod.static("/icon/", "web/icon");
+    mod.static("/kiri/", "web/kiri");
     mod.static("/mesh/", "web/mesh");
     mod.static("/moto/", "web/moto");
-    mod.static("/kiri/", "web/kiri");
-    mod.static("/boot/", "web/boot");
+    mod.static("/void/", "web/void");
 
     // module loader
     function load_modules(root, force) {
@@ -186,10 +191,10 @@ function init(mod) {
         });
     }
 
-    // load development and 3rd party modules
+    // load development and app modules (onshape, thingiverse)
     load_modules('mod');
 
-    // load optional local modules
+    // load optional local modules (bambu)
     load_modules('mods');
 
     // run load functions injected by modules
@@ -329,8 +334,10 @@ function initModule(mod, file, dir) {
             const path = mod.dir + '/' + dir + '/' + file;
             try {
                 const body = fs.readFileSync(path);
-                if (debug && !single) logger.log({ inject: code, file, opt });
-                if (opt.first) {
+                if (debug && !single) {
+                    logger.log({ inject: code, file, opt });
+                }
+                if (opt.first && append[code]) {
                     append[code] = body.toString() + '\n' + append[code];
                 } else {
                     append[code] += body.toString() + '\n';
@@ -369,8 +376,11 @@ function handleSetup(req, res, next) {
 }
 
 const productionMap = {
-    '/lib/mesh/work.js' : '/lib/pack/mesh-work.js',
+    '/lib/main/void.js' : '/lib/pack/void-main.js',
+    '/lib/main/planegcs.wasm' : '/lib/void/solver/planegcs_dist/planegcs.wasm',
+    '/lib/worker/solids_worker.js' : '/lib/pack/void-work-solid.js',
     '/lib/main/mesh.js' : '/lib/pack/mesh-main.js',
+    '/lib/mesh/work.js' : '/lib/pack/mesh-work.js',
     '/lib/main/kiri.js' : '/lib/pack/kiri-main.js',
     '/lib/kiri/run/engine.js' : '/lib/pack/kiri-eng.js',
     '/lib/kiri/run/minion.js' : '/lib/pack/kiri-pool.js',
