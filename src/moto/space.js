@@ -1560,26 +1560,49 @@ let Space = {
         front:  (then) => { runPreset(0,     PI2, then) },
         right:  (then) => { runPreset(PI2,   PI2, then) },
         left:   (then) => { runPreset(-PI2,  PI2, then) },
-        reset:  ()     => { viewControl.reset(); requestRefresh() },
-        load:   (cam)  => { viewControl.setPosition(cam); requestRefresh() },
-        save:   ()     => { return viewControl.getPosition(true) },
-        panTo:  (x,y,z,l,u,t,upVec) => { tweenCamPan(x,y,z,l,u,t,upVec) },
-        setZoom: (r,v) => { viewControl.setZoom(r,v) },
-        fit:    (then, opts = {}) => {
+        reset:  ()     => {
+            viewControl.reset();
+            requestRefresh()
+        },
+        load: (cam)  => {
+            viewControl.setPosition(cam);
+            requestRefresh();
+        },
+        save: () => {
+            return viewControl.getPosition(true);
+        },
+        panTo: (x,y,z,l,u,t,upVec) => {
+            tweenCamPan(x,y,z,l,u,t,upVec);
+        },
+        setZoom: (r,v) => {
+            viewControl.setZoom(r,v);
+        },
+        fit: (then, opts = {}) => {
             // Calculate bounding box of all objects in the workspace
             const box = new THREE.Box3();
             let hasObjects = false;
             const visibleOnly = opts.visibleOnly !== undefined ? !!opts.visibleOnly : fitVisibleOnly;
+            const targetObjects = Array.isArray(opts.objects) ? opts.objects.filter(Boolean) : null;
 
-            // Recursively expand box for all visible objects with geometry
-            WORLD.traverse(obj => {
-                if (!obj.geometry) return;
-                if (visibleOnly && !isEffectivelyVisible(obj)) return;
-                if (obj.visible) {
+            if (targetObjects && targetObjects.length) {
+                // Fit only the supplied objects (selection-driven fit in app code)
+                for (const obj of targetObjects) {
+                    if (!obj) continue;
+                    if (visibleOnly && !isEffectivelyVisible(obj)) continue;
                     box.expandByObject(obj);
                     hasObjects = true;
                 }
-            });
+            } else {
+                // Recursively expand box for all visible objects with geometry
+                WORLD.traverse(obj => {
+                    if (!obj.geometry) return;
+                    if (visibleOnly && !isEffectivelyVisible(obj)) return;
+                    if (obj.visible) {
+                        box.expandByObject(obj);
+                        hasObjects = true;
+                    }
+                });
+            }
 
             // If no objects, fall back to platform bounds
             if (!hasObjects) {
@@ -1690,7 +1713,7 @@ let Space = {
             const newPanX = center.x;
             const newPanY = center.y;
             const newPanZ = center.z;
-            const currentScaleSave = viewControl.getPosition(true).scale || 1;
+            const currentScaleSave = viewControl.getPosition({ scaled: true }).scale || 1;
             const currentDistToCenter = camera.position.distanceTo(center);
 
             const fitPos = {

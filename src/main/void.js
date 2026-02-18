@@ -109,10 +109,11 @@ function setupLeftPanelResize(db) {
         event.stopPropagation();
     };
 
-    window.addEventListener('resize', () => {
-        const curr = left.getBoundingClientRect().width;
-        applyWidth(curr);
-    });
+    const onResize = () => {
+        applyWidth(left.getBoundingClientRect().width);
+    }
+
+    window.addEventListener('resize', onResize);
 }
 
 // Main initialization function
@@ -289,26 +290,20 @@ async function init() {
     toolbar.updateDocumentTitle();
     tree.render();
 
-    // TEST: Add example overlay elements
-    // These demonstrate the 2D overlay tracking 3D points
-    if (true) { // Set to false to disable test overlays
-        const { THREE } = window;
+    const { THREE } = window;
 
-        // Show overlay
-        overlay.show();
+    // Show overlay
+    overlay.show();
 
-        // Add test points at origin and along axes
-        overlay.add('origin-point', 'point', {
-            pos3d: new THREE.Vector3(0, 0, 0),
-            radius: 4.8,
-            color: 'rgba(140, 140, 140, 0.45)',
-            stroke: '#5a9fd4',
-            strokeWidth: 2
-        });
-        api.origin.syncOverlayPoint();
-
-        console.log({ test_overlays_added: 1 });
-    }
+    // Add origin
+    overlay.add('origin-point', 'point', {
+        pos3d: new THREE.Vector3(0, 0, 0),
+        radius: 4.8,
+        color: 'rgba(140, 140, 140, 0.45)',
+        stroke: '#5a9fd4',
+        strokeWidth: 2
+    });
+    api.origin.syncOverlayPoint();
 
     // Hide loading curtain
     const curtain = $('curtain');
@@ -319,6 +314,9 @@ async function init() {
             curtain.style.display = 'none';
         }, 300);
     }
+
+    // update canvas based on left panel size
+    space.event.onResize();
 
     console.log({ void_form_ready: true });
 }
