@@ -1,0 +1,71 @@
+/* Shared color tokens for Kiri / Mesh / Void.
+ * Phase 1: define semantic palette + compatibility aliases.
+ * App CSS keeps final say by overriding locally as migration proceeds.
+ */
+
+:root {
+    /* semantic core */
+    --color-bg: #f6f8fb;
+    --color-bg-elev: #ffffff;
+    --color-bg-subtle: #eef2f7;
+    --color-surface: #ffffff;
+    --color-surface-2: #f3f6fb;
+    --color-text: #1b2430;
+    --color-text-muted: #556173;
+    --color-border: #a6b3c3;
+    --color-border-strong: #6a7a90;
+    --color-accent: #5a9fd4;
+    --color-accent-hover: #7bb8e8;
+    --color-focus: rgba(90,159,212,0.35);
+    --color-selection: rgba(90,159,212,0.45);
+    --color-selection-hover: rgba(90,159,212,0.8);
+    --color-success: #4ade80;
+    --color-warning: #fbbf24;
+    --color-danger: #f87171;
+}
+
+:root.dark,
+:root[data-theme="dark"] {
+    --color-bg: #0f1116;
+    --color-bg-elev: #161a22;
+    --color-bg-subtle: #1b2230;
+    --color-surface: #1a1f29;
+    --color-surface-2: #222936;
+    --color-text: #e2e8f0;
+    --color-text-muted: #a5b0c0;
+    --color-border: #444f63;
+    --color-border-strong: #6d7a93;
+    --color-accent: #5a9fd4;
+    --color-accent-hover: #7bb8e8;
+    --color-focus: rgba(90,159,212,0.4);
+    --color-selection: rgba(90,159,212,0.5);
+    --color-selection-hover: rgba(90,159,212,0.95);
+    --color-success: #4ade80;
+    --color-warning: #fbbf24;
+    --color-danger: #f87171;
+}
+
+/* Mesh compatibility aliases */
+:root {
+    --accent: var(--color-accent);
+    --menu-blue: var(--color-accent);
+    --menu-back: rgba(40,40,40,0.75);
+    --border: var(--color-border);
+    --selected: var(--color-selection);
+    --selected-hover: var(--color-selection-hover);
+}
+
+/* Void compatibility aliases */
+:root {
+    --bg-primary: var(--color-bg);
+    --bg-secondary: var(--color-surface);
+    --bg-tertiary: var(--color-surface-2);
+    --text-primary: var(--color-text);
+    --text-secondary: var(--color-text-muted);
+    --accent: var(--color-accent);
+    --accent-hover: var(--color-accent-hover);
+    --success: var(--color-success);
+    --warning: var(--color-warning);
+    --danger: var(--color-danger);
+}
+

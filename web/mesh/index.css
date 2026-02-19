@@ -230,9 +230,9 @@ button:hover {
     display: none;
     position: absolute;
     flex-direction: column;
-    border: 1px solid #999;
+    border: 1px solid var(--border);
     border-radius: 6px;
-    background: #333;
+    background: var(--menu-back);
     padding: 4px;
     top: calc(100% + 3px);
     left: 0;
@@ -430,7 +430,7 @@ button:hover {
 
 #modal_frame {
     background-color: rgba(30,30,30,0.9);
-    border: 1px solid rgba(200,200,200,0.6);
+    border: 1px solid var(--border);
     border-radius: 4px;
     color: white;
     flex-direction: column;
@@ -452,7 +452,7 @@ button:hover {
     color: white;
     border-radius: 2px;
     border-bottom: 1px solid rgba(0,0,0,0.2);
-    background-color: rgba(0,0,0,0.7);
+    background-color: rgba(60,60,60,0.7);
     font-family: 'Russo One', monospace;
     font-size: smaller;
     justify-content: center;
