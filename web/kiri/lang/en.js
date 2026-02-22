@@ -72,6 +72,11 @@ self.lang['en-us'] = {
     sx_menu:        "selection",
     face_left:      "face left",
     re_edgs:        "toggle edges",
+    al_menu:        "align",
+    re_menu:        "render",
+    sx_menu:        "selection",
+    face_left:      "face left",
+    re_edgs:        "toggle edges",
 
     acct_xpo:       ["make a backup of your device","and device profiles with the","option to include workspace","objects and positions"],
 

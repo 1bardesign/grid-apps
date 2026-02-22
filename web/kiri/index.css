@@ -1148,7 +1148,7 @@ details[open] summary::after {
 /* mode toolbar  */
 #mode-tools {
     pointer-events: all;
-    gap: 2px;
+    gap: 3px;
     top: 0;
     left: 0;
     right: 0;
@@ -1168,7 +1168,7 @@ details[open] summary::after {
     border-left: 1px solid var(--border-gray);
     border-right: 1px solid var(--border-gray);
     border-bottom: 1px solid var(--border-gray);
-    padding: 3px 5px 3px 5px;
+    padding: 4px 8px 4px 8px;
 }
 #mode-tools svg {
     aspect-ratio: 1/1;

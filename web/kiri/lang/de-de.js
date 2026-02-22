@@ -66,6 +66,16 @@ self.lang['de-de'] = {
     view:           "Ansicht",          // left view pop menu
     wire:           "Drahtansicht",     // left render pop menu
     volume:         "Volumen",          // device build area
+    al_menu:        "ausrichten",
+    re_menu:        "rendern",
+    sx_menu:        "auswahl",
+    face_left:      "linke seite",
+    re_edgs:        "kanten umschalten",
+    al_menu:        "ausrichten",
+    re_menu:        "rendern",
+    sx_menu:        "auswahl",
+    face_left:      "linke seite",
+    re_edgs:        "kanten umschalten",
 
     acct_xpo:       ["Lege ein Backup Deiner Geräte","und Geräte-Profile an, mit der","Option, den Arbeitsbereich und","mit Objekten und Anordnung zu speichern"],
 

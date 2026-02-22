@@ -66,6 +66,16 @@ self.lang['pt-pt'] = {
     view:           "visualizar",   // left view pop menu
     wire:           "aramado",      // left render pop menu
     volume:         "volume",       // device build area
+    al_menu:        "alinhar",
+    re_menu:        "renderizar",
+    sx_menu:        "seleção",
+    face_left:      "face esquerda",
+    re_edgs:        "alternar arestas",
+    al_menu:        "alinhar",
+    re_menu:        "renderizar",
+    sx_menu:        "seleção",
+    face_left:      "face esquerda",
+    re_edgs:        "alternar arestas",
 
     acct_xpo:       ["faça uma cópia de segurança do seu dispositivo","e perfis de dispositivo com a opção","de incluir objectos e posições","do espaço de trabalho"],
 

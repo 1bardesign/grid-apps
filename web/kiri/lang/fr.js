@@ -66,6 +66,16 @@ self.lang['fr-fr'] = {
     view:           "vue",          // left view pop menu
     wire:           "filaire",      // left render pop menu
     volume:         "volume",       // device build area
+    al_menu:        "aligner",
+    re_menu:        "rendu",
+    sx_menu:        "sélection",
+    face_left:      "face gauche",
+    re_edgs:        "basculer arêtes",
+    al_menu:        "aligner",
+    re_menu:        "rendu",
+    sx_menu:        "sélection",
+    face_left:      "face gauche",
+    re_edgs:        "basculer arêtes",
 
     acct_xpo:       ["faites une sauvegarde de votre appareil","et des profils d'appareil avec","l'option d'inclure les objets","de l'espace de travail et les positions"],
 

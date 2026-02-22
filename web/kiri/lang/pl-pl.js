@@ -65,6 +65,16 @@ self.lang['pl-pl'] = {
     view:           "widok",        // left view pop menu
     wire:           "szkielet",     // left render pop menu
     volume:         "objętość",     // device build area
+    al_menu:        "wyrównaj",
+    re_menu:        "renderuj",
+    sx_menu:        "zaznaczenie",
+    face_left:      "lewa ściana",
+    re_edgs:        "przełącz krawędzie",
+    al_menu:        "wyrównaj",
+    re_menu:        "renderuj",
+    sx_menu:        "zaznaczenie",
+    face_left:      "lewa ściana",
+    re_edgs:        "przełącz krawędzie",
 
     acct_xpo:       ["zrób kopię zapasową urządzenia","i profilów urządzenia z","opcją dołączenia obiektów","w przestrzeni roboczej i ich pozycji"],
 

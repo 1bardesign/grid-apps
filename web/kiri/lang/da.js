@@ -65,6 +65,16 @@ self.lang['da-dk'] = {
     view:           "vis",          // left view pop menu
     wire:           "tråd",         // left render pop menu
     volume:         "volumen",      // device build area
+    al_menu:        "juster",
+    re_menu:        "render",
+    sx_menu:        "markering",
+    face_left:      "venstre side",
+    re_edgs:        "skift kanter",
+    al_menu:        "juster",
+    re_menu:        "render",
+    sx_menu:        "markering",
+    face_left:      "venstre side",
+    re_edgs:        "skift kanter",
 
     acct_xpo: ["lav en sikkerhedskopi af din enhed","og enhedsprofiler med mulighed for at","medtage arbejdsområdeobjekter og positioner"],
 
