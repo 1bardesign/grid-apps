@@ -3,8 +3,8 @@
 import { menubar } from './menubar.js';
 
 const toolbar = {
-    build() {
-        menubar.build();
+    build(actions) {
+        menubar.build(actions);
     }
 };
 
