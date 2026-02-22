@@ -318,8 +318,7 @@ details[open] summary::after {
 .dark #render-tools .pop,
 .dark #render-tools svg,
 .dark .pop-tics > div,
-.dark #top,
-.dark #top .content,
+.dark #menubar.content,
 .dark #app-name,
 .dark .set2-group,
 .dark .set2-group .var-row,
@@ -390,7 +389,7 @@ details[open] summary::after {
 .dark #oplist div:hover .del {
     color: #777;
 }
-.dark #top .content > div:hover {
+.dark #menubar.content > div:hover {
     background-color: var(--blue-1);
 }
 .dark .top-menu label {
@@ -449,7 +448,7 @@ details[open] summary::after {
 }
 
 /* top menu bar, drop menus */
-#top, #app-name {
+#app-name {
     background-color: #fff;
     text-transform: capitalize;
     font-family: sans-serif;
@@ -507,16 +506,17 @@ details[open] summary::after {
 .top-menu > span:hover .top-menu-drop {
     display: flex;
 }
-.top-menu-left .content {
+/* .top-menu-right .content {
     border-top-right-radius: 4px; 
-}
-.top-menu-right {
     align-items: self-end;
+} */
+.top-menu-left {
+    align-items: self-start;
 }
 .top-menu-center .content > div > label {
     text-align: center !important;
 }
-.top-menu-right .content {
+.top-menu-left .content {
     border-top-left-radius: 4px; 
 }
 .top-menu-drop {
@@ -532,7 +532,7 @@ details[open] summary::after {
     width: 15px;
 }
 
-#top .content {
+#menubar.content {
     gap: 2px;
     display: flex;
     align-items: center;
@@ -545,63 +545,44 @@ details[open] summary::after {
     border-bottom-right-radius: 4px;
     border-bottom-left-radius: 4px;
 }
-#top .content {
+#menubar.content {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     padding: 2px;
 }
-#top .content > div {
+#menubar.content > div {
     display: flex;
     flex-direction: row;
 }
-#top .content > div > label {
+#menubar.content > div > label {
     text-align: left;
     flex-grow: 1;
 }
-#top .content > div > span {
+#menubar.content > div > span {
     text-align: right;
 }
-#top .content > div > span {
+#menubar.content > div > span {
     padding: 2px 7px 2px 7px;
     padding-left: 10px;
     text-align: center;
 }
-#top .content > div > label {
+#menubar.content > div > label {
     padding: 2px 7px 2px 7px;
     justify-self: stretch;
     align-self: stretch;
     border-radius: 3px;
 }
-#top .content > div:hover {
+#menubar.content > div:hover {
     background-color: var(--blue-4);
 }
 
 #app-name {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    z-index: 50;
-    transform: translateX(-50%);
-}
-#app-name {
-    cursor: pointer;
-
-}
-#app-name hr {
-    margin: 1px;
-}
-#app-name:hover #app-name-pop {
-    display: flex;
-}
-#app-name-pop {
-    color: var(--fg-gray);
-    font-family: sans-serif;
-    position: absolute;
-    top: 100%;
-}
-#app-name-pop .content {
-    text-align: center;
+    color: var(--appname-blue);
+    font-weight: bold;
+    align-self: center;
+    justify-self: stretch;
+    height: 100%;
 }
 
 #app,div {
@@ -1164,59 +1145,39 @@ details[open] summary::after {
     background-color: var(--main-color);
     color: white;
 }
-
-/* top center toolbar  */
-#render-tools {
+/* mode toolbar  */
+#mode-tools {
     pointer-events: all;
-    position: absolute;
     gap: 2px;
-    top: 3px;
+    top: 0;
     left: 0;
     right: 0;
     align-items: center;
     justify-content: center;
     flex-direction: row;
 }
-#render-tools span {
-    position: relative;
+#mode-tools > span {
+    text-transform: capitalize;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    color: var(--menubar-fore);
+    background-color: var(--menubar-back);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-left: 1px solid var(--border-gray);
+    border-right: 1px solid var(--border-gray);
+    border-bottom: 1px solid var(--border-gray);
+    padding: 3px 5px 3px 5px;
 }
-#render-tools svg {
-    font-size: 20px;
+#mode-tools svg {
     aspect-ratio: 1/1;
-    background-color: #fff;
-    border: 1px solid #aaa;
-    border-radius: 3px;
-    padding: 8px;
+    font-size: 20px;
+    padding: 0 5px 0 0;
 }
-#render-tools svg:hover {
-    border: 1px solid blue;
-    background-color: var(--blue-4);
-}
-/** tool pop menus */
-#render-tools .pop:before {
-    position: absolute;
-    top: -10px;
-    left: -20px;
-    width: calc(100% + 40px);
-    height: calc(100% + 20px);
-    /* background-color: red; */
-    content: "";
-}
-#render-tools .pop {
-    background-color: #fff;
-    border: 1px solid #aaa;
-    border-radius: 3px;
-    position: absolute;
-    margin-top: 3px;
-    padding: 3px;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    white-space: nowrap;
-}
-#render-tools > span:not(:hover) .pop {
-    display: none;
+#mode-tools > span:hover {
+    border-color: var(--appname-blue);
+    background-color: rgba(0,0,0,0.4);
 }
 /** fdm extruder drop-down */
 #ft-nozzle .splat {

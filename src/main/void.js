@@ -305,6 +305,9 @@ async function init() {
     });
     api.origin.syncOverlayPoint();
 
+    // update canvas based on left panel size
+    space.event.onResize();
+
     // Hide loading curtain
     const curtain = $('curtain');
     if (curtain) {
@@ -314,9 +317,6 @@ async function init() {
             curtain.style.display = 'none';
         }, 300);
     }
-
-    // update canvas based on left panel size
-    space.event.onResize();
 
     console.log({ void_form_ready: true });
 }

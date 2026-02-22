@@ -109,6 +109,7 @@ function booleanSave() {
     updateDrawer();
     api.event.emit('boolean.update');
     space.view.setProjection(control.ortho ? 'orthographic' : 'perspective');
+    setDarkLight(control.dark);
 }
 
 function updateDrawer() {

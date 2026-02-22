@@ -4,43 +4,18 @@
  */
 
 :root {
-    /* semantic core */
-    --color-bg: #f6f8fb;
-    --color-bg-elev: #ffffff;
-    --color-bg-subtle: #eef2f7;
-    --color-surface: #ffffff;
-    --color-surface-2: #f3f6fb;
-    --color-text: #1b2430;
-    --color-text-muted: #556173;
-    --color-border: #a6b3c3;
-    --color-border-strong: #6a7a90;
-    --color-accent: #5a9fd4;
-    --color-accent-hover: #7bb8e8;
-    --color-focus: rgba(90,159,212,0.35);
-    --color-selection: rgba(90,159,212,0.45);
-    --color-selection-hover: rgba(90,159,212,0.8);
-    --color-success: #4ade80;
-    --color-warning: #fbbf24;
-    --color-danger: #f87171;
+    --appname-blue: #5a9fd4;
+    --menubar-vsep: rgba(0,0,0,0.2);
+    --menubar-back: rgba(128,128,128,0.5);
+    --menubar-fore: rgba(20,20,20,1.0);
+    --border-gray:  rgba(128,128,128,0.5);
 }
 
 :root.dark,
 :root[data-theme="dark"] {
-    --color-bg: #0f1116;
-    --color-bg-elev: #161a22;
-    --color-bg-subtle: #1b2230;
-    --color-surface: #1a1f29;
-    --color-surface-2: #222936;
-    --color-text: #e2e8f0;
-    --color-text-muted: #a5b0c0;
-    --color-border: #444f63;
-    --color-border-strong: #6d7a93;
-    --color-accent: #5a9fd4;
-    --color-accent-hover: #7bb8e8;
-    --color-focus: rgba(90,159,212,0.4);
-    --color-selection: rgba(90,159,212,0.5);
-    --color-selection-hover: rgba(90,159,212,0.95);
-    --color-success: #4ade80;
-    --color-warning: #fbbf24;
-    --color-danger: #f87171;
+    --appname-blue: #5a9fd4;
+    --menubar-vsep: rgba(255,255,255,0.2);
+    --menubar-back: rgba(50,50,50,0.9);
+    --menubar-fore: rgba(250,250,250,1.0);
+    --border-gray:  rgba(128,128,128,0.5);
 }

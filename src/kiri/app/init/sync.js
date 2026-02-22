@@ -221,7 +221,6 @@ function setup_keybd_nav() {
     // bind interface action elements
     ui.acct.help.onclick = (ev) => { ev.stopPropagation(); api.help.show() };
     ui.acct.don8.onclick = (ev) => { ev.stopPropagation(); api.modal.show('don8') };
-    ui.acct.mesh.onclick = (ev) => { ev.stopPropagation(); WIN.location = "/mesh" };
     ui.acct.export.onclick = (ev) => { ev.stopPropagation(); settingsOps.export_profile() };
     ui.acct.export.title = LANG.acct_xpo;
     ui.func.slice.onclick = (ev) => { ev.stopPropagation(); api.function.slice() };
@@ -251,10 +250,6 @@ function setup_keybd_nav() {
     $('view-arrange').onclick = api.platform.layout;
     $('view-top').onclick = space.view.top;
     $('view-home').onclick = space.view.home;
-    $('view-front').onclick = space.view.front;
-    $('view-back').onclick = space.view.back;
-    $('view-left').onclick = space.view.left;
-    $('view-right').onclick = space.view.right;
 
     $('unrotate').onclick = () => {
         api.widgets.for(w => w.unrotate());
@@ -313,7 +308,7 @@ function setup_keybd_nav() {
     $('context-setfocus').onclick = () => {
         view_tools.startFocus(ev => api.space.set_focus(undefined, ev.object.point));
     };
-    $('context-contents').onclick = api.const.SPACE.view.fit;
+    // $('context-contents').onclick = api.const.SPACE.view.fit;
     $('view-fit').onclick = api.const.SPACE.view.fit;
     $('wassup').onmouseover = () => { $('suppopp').classList.remove('hide') };
 
