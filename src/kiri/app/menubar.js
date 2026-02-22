@@ -119,7 +119,7 @@ function content(actions) {
                             input({ id: 'load-file', type: 'file', name: 'loadme', style: 'display:none', accept: '.km,.kmz,.stl,.obj,.svg,.png,.jpg,.jpeg,.gcode,.nc' })
                     }),
                     hr(),
-                    menuItem(actions, { id: 'app-export', lk: 'export-ws', text: 'export work', iconClass: 'fas fa-download' }),
+                    menuItem(actions, { id: 'app-export', lk: 'rc_xpws', text: 'export work', iconClass: 'fas fa-download' }),
                     hr(),
                     menuItem(actions, { id: 'app-quit', lk: 'quit', text: 'quit', className: 'hide' })
                 ]
@@ -135,27 +135,27 @@ function content(actions) {
             }),
             topMenu(actions, {
                 text: 'Align', lk: 'al_menu', items: [
-                    menuItem(actions, { id: 'context-setfocus', lk: 'focus', text: 'focal point', iconClass: 'fas fa-eye' }),
-                    menuItem(actions, { id: 'context-layflat', lk: 'face-down', text: 'face down', iconClass: 'fas fa-angle-double-down' }),
-                    menuItem(actions, { id: 'context-lefty', lk: 'face-left', text: 'face left', iconClass: 'fas fa-angle-double-left' })
+                    menuItem(actions, { id: 'context-setfocus', lk: 'rc_focs', text: 'focal point', iconClass: 'fas fa-eye' }),
+                    menuItem(actions, { id: 'context-layflat', lk: 'rc_lafl', text: 'face down', iconClass: 'fas fa-angle-double-down' }),
+                    menuItem(actions, { id: 'context-lefty', lk: 'face_left', text: 'face left', iconClass: 'fas fa-angle-double-left' })
                 ]
             }),
             topMenu(actions, {
                 text: 'render', lk: 're_menu', items: [
-                    menuItem(actions, { id: 'render-solid', xlk: 'focus', text: 'solid', iconClass: 'fas fa-square' }),
-                    menuItem(actions, { id: 'render-wire', xlk: 'face-down', text: 'wireframe', iconClass: 'fas fa-border-all' }),
-                    menuItem(actions, { id: 'render-ghost', xlk: 'face-left', text: 'transparent', iconClass: 'fas fa-border-none' }),
+                    menuItem(actions, { id: 'render-solid', lk: 'solid', text: 'solid', iconClass: 'fas fa-square' }),
+                    menuItem(actions, { id: 'render-wire', lk: 'wire', text: 'wireframe', iconClass: 'fas fa-border-all' }),
+                    menuItem(actions, { id: 'render-ghost', lk: 'ghost', text: 'transparent', iconClass: 'fas fa-border-none' }),
                     hr(),
-                    menuItem(actions, { id: 'render-edges', xlk: 'face-left', text: 'toggle edges', iconClass: 'fa-regular fa-square' })
+                    menuItem(actions, { id: 'render-edges', lk: 're_edgs', text: 'toggle edges', iconClass: 'fa-regular fa-square' })
                 ]
             }),
             topMenu(actions, {
                 text: 'selection', lk: 'sx_menu', items: [
-                    menuItem(actions, { id: 'context-mirror', xlk: 'rc_mirr-left', text: 'mirror', iconClass: 'fas fa-arrows-left-right-to-line' }),
-                    menuItem(actions, { id: 'context-duplicate', xlk: 'rc_dupl', text: 'duplicate', iconClass: 'fas fa-copy' }),
+                    menuItem(actions, { id: 'context-mirror', lk: 'rc_mirr', text: 'mirror', iconClass: 'fas fa-arrows-left-right-to-line' }),
+                    menuItem(actions, { id: 'context-duplicate', lk: 'rc_dupl', text: 'duplicate', iconClass: 'fas fa-copy' }),
                     hr(),
-                    menuItem(actions, { id: 'mesh-merge', xlk: 'rc_merg', text: 'merge meshes' }),
-                    menuItem(actions, { id: 'mesh-split', xlk: 'rc_splt-down', text: 'isolate meshes' }),
+                    menuItem(actions, { id: 'mesh-merge', lk: 'rc_merg', text: 'merge meshes' }),
+                    menuItem(actions, { id: 'mesh-split', lk: 'rc_splt', text: 'isolate meshes' }),
                     hr(),
                     menuItem(actions, { id: 'mesh-export-obj', lk: 'export-obj', text: 'save as OBJ', iconClass: 'fas fa-dice-d20' }),
                     menuItem(actions, { id: 'mesh-export-stl', lk: 'export-stl', text: 'save as  STL', iconClass: 'fas fa-dice-d20' })

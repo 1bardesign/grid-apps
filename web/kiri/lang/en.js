@@ -67,6 +67,11 @@ self.lang['en-us'] = {
     view:           "view",         // left view pop menu
     wire:           "wire",         // left render pop menu
     volume:         "volume",       // device build area
+    al_menu:        "align",
+    re_menu:        "render",
+    sx_menu:        "selection",
+    face_left:      "face left",
+    re_edgs:        "toggle edges",
 
     acct_xpo:       ["make a backup of your device","and device profiles with the","option to include workspace","objects and positions"],
 
