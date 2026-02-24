@@ -1038,7 +1038,7 @@ details[open] summary::after {
     position: fixed;
     display: flex;
     flex-direction: column;
-    z-index: 220;
+    z-index: 80;
     min-width: 230px;
     border: 1px solid var(--border-gray);
     border-radius: 6px;
