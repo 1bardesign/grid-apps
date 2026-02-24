@@ -421,7 +421,7 @@ export function opRender() {
             const brect = ev.target.getBoundingClientRect();
             const prect = parent.getBoundingClientRect();
             const Prect = poprec.div.getBoundingClientRect();
-            const topmv = brect.top - prect.top - 20;
+            const topmv = brect.top - prect.top - Math.min(50, Prect.height/5);
             const topnu = prect.top + topmv;
             const botof = innerHeight - (topnu + Prect.height);
             const offpx = botof < 0 ? topmv + botof : topmv;
