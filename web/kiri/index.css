@@ -235,8 +235,6 @@ details[open] summary::after {
     .pop-tics > div,
     #menubar.content,
     #app-name,
-    .set2-group,
-    .set2-group .var-row,
     .set2-sep,
     .var-row,
     #layers .var-row,
@@ -2195,12 +2193,12 @@ details[open] summary::after {
     background-color: var(--blue-4);
 }
 .set2-group {
-    background-color: #fff;
+    background-color: var(--menubar-back);
     flex-flow: column;
     padding: 0 0 2px 0;
 }
 .set2-group .var-row, .var-row {
-    background: #fff;
+    background: var(--menubar-back);
     padding: 1px 4px 1px 4px;
     margin: 0 !important;
     border-left: 3px solid transparent;
