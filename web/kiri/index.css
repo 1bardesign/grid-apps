@@ -1446,6 +1446,7 @@ details[open] summary::after {
 #op-add-list > div {
     padding: 3px 5px 3px 5px;
     display: flex;
+    font-size: 14px;
     flex-direction: column;
     border: 1px dashed gray;
     border-radius: 3px;
