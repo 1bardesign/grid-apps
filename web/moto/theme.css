@@ -13,9 +13,12 @@
 :root[data-app="kiri"] input,
 :root[data-app="kiri"] select,
 :root[data-app="kiri"] option {
+    border-style: solid;
+    border-width: 0px;
     border-color: var(--ui-border);
     background-color: var(--ui-input-bg);
     color: var(--ui-input-fg);
+    border-bottom-width: 1px;
 }
 
 :root[data-app="kiri"] select {

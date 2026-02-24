@@ -13,14 +13,14 @@
     --border-gray:  rgba(128,128,128,0.5);
     --ui-text: #222;
     --ui-text-muted: #888;
-    --ui-border: #bbb;
+    --ui-border: #ddd;
     --ui-border-strong: #777;
     --ui-hr: #ddd;
-    --ui-input-bg: #f8f8ff;
+    --ui-input-bg: #e8e8e8;
     --ui-input-fg: #222;
     --ui-input-disabled-bg: #ddd;
     --ui-input-disabled-fg: #000;
-    --ui-select-bg: rgba(255,255,255,0.5);
+    --ui-select-bg: #e8e8e8;
     --ui-option-selected-bg: var(--appname-blue);
     --ui-textarea-bg: #fff;
     --ui-textarea-fg: #222;
@@ -47,7 +47,7 @@
     --border-gray:  rgba(128,128,128,0.5);
     --ui-text: #fff;
     --ui-text-muted: #888;
-    --ui-border: #888;
+    --ui-border: #444;
     --ui-border-strong: #666;
     --ui-hr: #555;
     --ui-input-bg: #333;

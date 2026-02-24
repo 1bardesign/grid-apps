@@ -86,22 +86,16 @@ button[disabled] {
     color: #999;
 }
 input {
-    background-color: #f8f8ff;
+    margin-top: 1px;
     margin-bottom: 1px;
-    text-align: right;
-    border: 0.5px solid #bbb;
     padding-top: 0;
     padding-bottom: 0;
-    margin-top: 1px;
     position: relative;
+    text-align: right;
 }
 input:focus {
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgb(0 100 255 / 10%);
-}
-input[disabled] {
-    background-color: #ddd;
-    color: #000;
 }
 input[type="range"] {
     width: 85px;
@@ -141,8 +135,6 @@ textarea {
     overflow: scroll;
 }
 select {
-    border: 1px solid #bbb;
-    background-color: rgba(255,255,255,0.5);
     border-radius: 3px;
 }
 th, tr, td, span, div, label, button {
