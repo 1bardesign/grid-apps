@@ -838,8 +838,8 @@ details[open] summary::after {
     overflow: unset;
 }
 #ws-widgets {
-    max-height: 250px;
-    overflow-y: auto;
+    /* max-height: 250px;
+    overflow-y: auto; */
 }
 #ws-widgets, #camops, #fdm-ranges {
     padding: 0 4px 0 4px;
