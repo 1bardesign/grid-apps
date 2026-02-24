@@ -119,6 +119,9 @@ function content(actions) {
                             input({ id: 'load-file', type: 'file', name: 'loadme', style: 'display:none', accept: '.km,.kmz,.stl,.obj,.svg,.png,.jpg,.jpeg,.gcode,.nc' })
                     }),
                     hr(),
+                    menuItem(actions, { id: 'mesh-export-obj', lk: 'export-obj', text: 'save as OBJ', iconClass: 'fas fa-dice-d20' }),
+                    menuItem(actions, { id: 'mesh-export-stl', lk: 'export-stl', text: 'save as  STL', iconClass: 'fas fa-dice-d20' }),
+                    hr(),
                     menuItem(actions, { id: 'app-export', lk: 'rc_xpws', text: 'export work', iconClass: 'fas fa-download' }),
                     hr(),
                     menuItem(actions, { id: 'app-quit', lk: 'quit', text: 'quit', className: 'hide' })
@@ -156,9 +159,6 @@ function content(actions) {
                     hr(),
                     menuItem(actions, { id: 'mesh-merge', lk: 'rc_merg', text: 'merge meshes' }),
                     menuItem(actions, { id: 'mesh-split', lk: 'rc_splt', text: 'isolate meshes' }),
-                    hr(),
-                    menuItem(actions, { id: 'mesh-export-obj', lk: 'export-obj', text: 'save as OBJ', iconClass: 'fas fa-dice-d20' }),
-                    menuItem(actions, { id: 'mesh-export-stl', lk: 'export-stl', text: 'save as  STL', iconClass: 'fas fa-dice-d20' })
                 ]
             }),
             div({ class: 'menubar-separator' }),
