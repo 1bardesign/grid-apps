@@ -192,6 +192,7 @@ Regression guardrails:
 2. No schema changes required to add spline segment kind later.
 3. Selection never reports mixed-source face entities.
 4. Any debug/runtime geometry under solids root must explicitly convert GeometryStore world coordinates to root-local coordinates.
+5. Boundary debug rendering must use GeometryStore (`boundaries` / `surface_patches`) as source of truth, not reconstructed sketch-plane loops.
 
 ## Implementation Checklist
 

@@ -724,7 +724,6 @@ function edgeKey(a, b) {
 
         const triRegionIds = new Array(triCount);
         const triRegionKeys = new Array(triCount);
-        const sourceRegionIdsSet = new Set();
 
         for (let ti = 0; ti < triCount; ti++) {
             const globalTri = Number(faceTris[ti]);
@@ -757,28 +756,6 @@ function edgeKey(a, b) {
             const ids = normalizeRegionIds(fromSolids, sourceProfileKeys);
             triRegionIds[ti] = ids;
             triRegionKeys[ti] = regionKey(ids);
-            for (const id of ids) sourceRegionIdsSet.add(id);
-        }
-
-        const triNeighbors = Array.from({ length: triCount }, () => []);
-        const firstByEdge = new Map();
-        for (let ti = 0; ti < triCount; ti++) {
-            const a = Number(triIndex[ti * 3]);
-            const b = Number(triIndex[ti * 3 + 1]);
-            const c = Number(triIndex[ti * 3 + 2]);
-            const edges = [[a, b], [b, c], [c, a]];
-            for (const [v0, v1] of edges) {
-                const key = edgeKey(v0, v1);
-                if (!firstByEdge.has(key)) {
-                    firstByEdge.set(key, ti);
-                } else {
-                    const other = firstByEdge.get(key);
-                    if (Number.isFinite(other) && other !== ti) {
-                        triNeighbors[ti].push(other);
-                        triNeighbors[other].push(ti);
-                    }
-                }
-            }
         }
 
         const localToWorld = new Map();
@@ -790,6 +767,36 @@ function edgeKey(a, b) {
             localToWorld.set(key, out);
             return out;
         };
+
+        const geomEdgeKey = (a, b) => {
+            const ka = quantPointKey(a);
+            const kb = quantPointKey(b);
+            return ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+        };
+
+        const triNeighbors = Array.from({ length: triCount }, () => []);
+        const firstByEdge = new Map();
+        for (let ti = 0; ti < triCount; ti++) {
+            const ia = Number(triIndex[ti * 3]);
+            const ib = Number(triIndex[ti * 3 + 1]);
+            const ic = Number(triIndex[ti * 3 + 2]);
+            const a = worldVertex(ia);
+            const b = worldVertex(ib);
+            const c = worldVertex(ic);
+            const edges = [[a, b], [b, c], [c, a]];
+            for (const [v0, v1] of edges) {
+                const key = geomEdgeKey(v0, v1);
+                if (!firstByEdge.has(key)) {
+                    firstByEdge.set(key, ti);
+                } else {
+                    const other = firstByEdge.get(key);
+                    if (Number.isFinite(other) && other !== ti) {
+                        triNeighbors[ti].push(other);
+                        triNeighbors[other].push(ti);
+                    }
+                }
+            }
+        }
 
         const visited = new Uint8Array(triCount);
         const groups = [];
@@ -825,14 +832,17 @@ function edgeKey(a, b) {
                 const i0 = Number(triIndex[localTri * 3]);
                 const i1 = Number(triIndex[localTri * 3 + 1]);
                 const i2 = Number(triIndex[localTri * 3 + 2]);
+                const v0 = worldVertex(i0);
+                const v1 = worldVertex(i1);
+                const v2 = worldVertex(i2);
                 const globalTri = Number(faceTris[localTri]);
                 if (Number.isFinite(globalTri)) triIdsGlobal.push(globalTri);
-                const edges = [[i0, i1], [i1, i2], [i2, i0]];
+                const edges = [[v0, v1], [v1, v2], [v2, v0]];
                 for (const [a, b] of edges) {
-                    const ek = edgeKey(a, b);
+                    const ek = geomEdgeKey(a, b);
                     const rec = boundaryEdges.get(ek);
                     if (!rec) {
-                        boundaryEdges.set(ek, { a, b, count: 1 });
+                        boundaryEdges.set(ek, { a: a.clone(), b: b.clone(), count: 1 });
                     } else {
                         rec.count++;
                     }
@@ -841,10 +851,10 @@ function edgeKey(a, b) {
             const loopSegments = [];
             for (const rec of boundaryEdges.values()) {
                 if (Number(rec?.count) !== 1) continue;
-                const a = worldVertex(rec.a);
-                const b = worldVertex(rec.b);
+                const a = rec?.a;
+                const b = rec?.b;
                 if (!a || !b || a.distanceToSquared?.(b) <= 1e-16) continue;
-                loopSegments.push({ a: a.clone(), b: b.clone() });
+                loopSegments.push({ a, b });
             }
             const loops = buildBoundaryLoopsFromSegments(loopSegments);
             if (!loops.length) continue;
@@ -1129,70 +1139,45 @@ function edgeKey(a, b) {
             }
 
             if (prefs.showBoundaries) {
-                const sketchDerived = this.getSketchDerivedBoundarySegments();
-                if (sketchDerived.length) {
+                const preferredBoundaryIds = new Set();
+                for (const patch of patches) {
+                    const ids = Array.isArray(patch?.boundary_ids) ? patch.boundary_ids : [];
+                    for (const id of ids) {
+                        const bid = String(id || '').trim();
+                        if (bid) preferredBoundaryIds.add(bid);
+                    }
+                }
+                let toDraw = preferredBoundaryIds.size
+                    ? boundaries.filter(boundary => preferredBoundaryIds.has(String(boundary?.id || '')))
+                    : boundaries;
+                if (!toDraw.length && boundaries.length) {
+                    toDraw = boundaries;
+                }
+                for (const boundary of toDraw) {
+                    const segmentIds = Array.isArray(boundary?.segment_ids) ? boundary.segment_ids : [];
+                    if (!segmentIds.length) continue;
                     const positions = [];
-                    for (const seg of sketchDerived) {
-                        // Sketch-derived loop points are generated from sketch plane
-                        // frames in the same modeling frame as `space.WORLD` (root local).
-                        // Do not apply an additional world->root conversion here or the
-                        // debug boundaries will rotate off-axis by the WORLD transform.
-                        const a = seg.a;
-                        const b = seg.b;
+                    for (const segmentId of segmentIds) {
+                        const seg = segById.get(String(segmentId || ''));
+                        if (!seg?.a || !seg?.b) continue;
+                        const a = toRootLocal(vec3FromRecord(seg.a));
+                        const b = toRootLocal(vec3FromRecord(seg.b));
                         positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
                     }
-                    if (positions.length) {
-                        const geom = new THREE.BufferGeometry();
-                        geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-                        const mat = new THREE.LineBasicMaterial({
-                            color: 0x6ee7b7,
-                            transparent: true,
-                            opacity: 0.95,
-                            depthTest: false,
-                            depthWrite: false
-                        });
-                        const lines = new THREE.LineSegments(geom, mat);
-                        lines.renderOrder = 95;
-                        this._debugGroup.add(lines);
-                    }
-                } else {
-                    const preferredBoundaryIds = new Set();
-                    for (const patch of patches) {
-                        const ids = Array.isArray(patch?.boundary_ids) ? patch.boundary_ids : [];
-                        for (const id of ids) {
-                            const bid = String(id || '').trim();
-                            if (bid) preferredBoundaryIds.add(bid);
-                        }
-                    }
-                    const toDraw = preferredBoundaryIds.size
-                        ? boundaries.filter(boundary => preferredBoundaryIds.has(String(boundary?.id || '')))
-                        : boundaries;
-                    for (const boundary of toDraw) {
-                        const segmentIds = Array.isArray(boundary?.segment_ids) ? boundary.segment_ids : [];
-                        if (!segmentIds.length) continue;
-                        const positions = [];
-                        for (const segmentId of segmentIds) {
-                            const seg = segById.get(String(segmentId || ''));
-                            if (!seg?.a || !seg?.b) continue;
-                            const a = toRootLocal(vec3FromRecord(seg.a));
-                            const b = toRootLocal(vec3FromRecord(seg.b));
-                            positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
-                        }
-                        if (!positions.length) continue;
-                        const color = colorFromId(boundary?.id, 62, 56);
-                        const geom = new THREE.BufferGeometry();
-                        geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-                        const mat = new THREE.LineBasicMaterial({
-                            color,
-                            transparent: true,
-                            opacity: 0.9,
-                            depthTest: false,
-                            depthWrite: false
-                        });
-                        const lines = new THREE.LineSegments(geom, mat);
-                        lines.renderOrder = 95;
-                        this._debugGroup.add(lines);
-                    }
+                    if (!positions.length) continue;
+                    const color = colorFromId(boundary?.id, 62, 56);
+                    const geom = new THREE.BufferGeometry();
+                    geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                    const mat = new THREE.LineBasicMaterial({
+                        color,
+                        transparent: true,
+                        opacity: 0.9,
+                        depthTest: false,
+                        depthWrite: false
+                    });
+                    const lines = new THREE.LineSegments(geom, mat);
+                    lines.renderOrder = 95;
+                    this._debugGroup.add(lines);
                 }
             }
 
