@@ -156,6 +156,26 @@ function edgeKey(a, b) {
     return a < b ? `${a}:${b}` : `${b}:${a}`;
 }
 
+    function colorFromId(id, sat = 70, light = 58) {
+        const raw = String(id || '');
+        let hash = 0;
+        for (let i = 0; i < raw.length; i++) {
+            hash = ((hash << 5) - hash + raw.charCodeAt(i)) | 0;
+        }
+        const hue = Math.abs(hash % 360);
+        const color = new THREE.Color();
+        color.setHSL(hue / 360, sat / 100, light / 100);
+        return color;
+    }
+
+    function vec3FromRecord(rec) {
+        return new THREE.Vector3(
+            Number(rec?.x || 0),
+            Number(rec?.y || 0),
+            Number(rec?.z || 0)
+        );
+    }
+
     function distancePointToSegmentSquared(p, a, b) {
         const ab = new THREE.Vector3().subVectors(b, a);
         const ap = new THREE.Vector3().subVectors(p, a);
@@ -637,6 +657,14 @@ function edgeKey(a, b) {
             edgeHoverLineWidth: 2.5,
             edgeSelectedLineWidth: 3.25
         },
+        _debugPrefs: {
+            showBoundaries: false,
+            showSegments: false,
+            showSegmentLabels: false,
+            showSurfaceLabels: false,
+            showRegionLabels: false,
+            showPatchLabels: false
+        },
         _faceMats: null,
         _worker: null,
         _workerReady: false,
@@ -650,6 +678,8 @@ function edgeKey(a, b) {
         _loopKeyByGeomBoundaryId: new Map(),
         _frozenChamferEdges: null,
         _frozenEdgeOverlays: null,
+        _debugGroup: null,
+        _debugLabelIds: new Set(),
 
         async init() {
             await ensureKernel();
@@ -723,8 +753,351 @@ function edgeKey(a, b) {
             this._root.name = 'void-solids-runtime';
             this._frozenEdgeOverlays = new THREE.Group();
             this._frozenEdgeOverlays.name = 'void-solids-frozen-edge-overlays';
+            this._debugGroup = new THREE.Group();
+            this._debugGroup.name = 'void-solids-debug-overlays';
             this._root.add(this._frozenEdgeOverlays);
+            this._root.add(this._debugGroup);
             world?.add?.(this._root);
+        },
+
+        getSketchDerivedBoundarySegmentsForSolid(solid) {
+            const api = getApi();
+            if (!solid || String(solid?.source?.feature_type || '') !== 'extrude') return [];
+            const depth = Math.max(0.0001, Math.abs(Number(solid?.extrude?.depth ?? 0)));
+            if (!Number.isFinite(depth) || depth <= 0) return [];
+            const symmetric = solid?.extrude?.symmetric === true;
+            const direction = solid?.extrude?.direction === 'reverse' ? 'reverse' : 'normal';
+            const localZShift = symmetric ? (-depth / 2) : (direction === 'reverse' ? -depth : 0);
+
+            const keys = Array.isArray(solid?.source?.profile_keys) && solid.source.profile_keys.length
+                ? solid.source.profile_keys
+                : (solid?.source?.profile?.region_id ? [solid.source.profile.region_id] : []);
+            if (!keys.length) return [];
+
+            const segments = [];
+            for (const key of keys) {
+                const ref = resolveProfileTargetRef({ region_id: String(key || '') });
+                if (!ref?.sketchId || !ref?.profileId) continue;
+                const sketch = api.features?.findById?.(ref.sketchId);
+                const basis = frameToBasis(sketch?.plane || null);
+                if (!basis) continue;
+                const loops = profileLoopsFromRuntime(api, { region_id: String(key || '') }) || [];
+                for (const loop of loops) {
+                    if (!Array.isArray(loop) || loop.length < 3) continue;
+                    const points = loop.map(p => ({ x: Number(p?.x || 0), y: Number(p?.y || 0) }));
+                    for (let i = 0; i < points.length; i++) {
+                        const a2 = points[i];
+                        const b2 = points[(i + 1) % points.length];
+                        const aStart = basis.origin.clone()
+                            .addScaledVector(basis.xAxis, a2.x)
+                            .addScaledVector(basis.yAxis, a2.y)
+                            .addScaledVector(basis.normal, localZShift);
+                        const bStart = basis.origin.clone()
+                            .addScaledVector(basis.xAxis, b2.x)
+                            .addScaledVector(basis.yAxis, b2.y)
+                            .addScaledVector(basis.normal, localZShift);
+                        const aEnd = aStart.clone().addScaledVector(basis.normal, depth);
+                        const bEnd = bStart.clone().addScaledVector(basis.normal, depth);
+                        segments.push({ a: aStart, b: bStart });
+                        segments.push({ a: aEnd, b: bEnd });
+                    }
+                }
+            }
+            return segments;
+        },
+
+        getSketchDerivedBoundarySegments() {
+            const out = [];
+            for (const solid of this.list() || []) {
+                const segs = this.getSketchDerivedBoundarySegmentsForSolid(solid);
+                if (segs?.length) out.push(...segs);
+            }
+            return out;
+        },
+
+        clearDebugOverlays() {
+            if (this._debugGroup) {
+                while (this._debugGroup.children.length) {
+                    const child = this._debugGroup.children[0];
+                    child.geometry?.dispose?.();
+                    child.material?.dispose?.();
+                    this._debugGroup.remove(child);
+                }
+            }
+            const api = getApi();
+            for (const id of this._debugLabelIds) {
+                api.overlay?.remove?.(id);
+            }
+            this._debugLabelIds.clear();
+        },
+
+        syncDebugOverlays(snapshot = null) {
+            this.clearDebugOverlays();
+            const prefs = this._debugPrefs || {};
+            const enabled = !!(
+                prefs.showBoundaries
+                || prefs.showSegments
+                || prefs.showSegmentLabels
+                || prefs.showSurfaceLabels
+                || prefs.showRegionLabels
+                || prefs.showPatchLabels
+            );
+            if (!enabled || !this._debugGroup) return;
+
+            const api = getApi();
+            const store = snapshot || api?.document?.current?.geometry_store || null;
+            const boundaries = Array.isArray(store?.boundaries) ? store.boundaries : [];
+            const segments = Array.isArray(store?.segments) ? store.segments : [];
+            const surfaces = Array.isArray(store?.surfaces) ? store.surfaces : [];
+            const regions = Array.isArray(store?.regions) ? store.regions : [];
+            const patches = Array.isArray(store?.surface_patches) ? store.surface_patches : [];
+            if (!boundaries.length && !segments.length && !surfaces.length && !regions.length) return;
+
+            const segById = new Map(segments.map(seg => [String(seg?.id || ''), seg]));
+            const boundaryById = new Map(boundaries.map(boundary => [String(boundary?.id || ''), boundary]));
+            const surfaceById = new Map(surfaces.map(surface => [String(surface?.id || ''), surface]));
+            const patchById = new Map(patches.map(patch => [String(patch?.id || ''), patch]));
+            this._root?.updateMatrixWorld?.(true);
+
+            // IMPORTANT: GeometryStore coordinates are scene/world-space.
+            // The solids runtime is attached under `space.WORLD`, which is rotated
+            // by -90deg on X in `space.js`. Any 3D debug geometry parented under
+            // this root MUST convert world -> root local first, or it will appear
+            // rotated/misaligned. Keep labels in world space (overlay expects world).
+            const toRootLocal = (worldVec3) => this._root?.worldToLocal?.(worldVec3.clone()) || worldVec3.clone();
+
+            const addLabel = (id, text, pos3d, color = '#ffd166') => {
+                if (!api.overlay || !pos3d || !text) return;
+                const labelId = `solid-debug:${id}`;
+                const opts = {
+                    pos3d,
+                    text,
+                    color,
+                    fontSize: 11,
+                    className: 'overlay-text'
+                };
+                if (api.overlay.elements?.has?.(labelId)) {
+                    api.overlay.update(labelId, opts);
+                } else {
+                    api.overlay.add(labelId, 'text', opts);
+                }
+                this._debugLabelIds.add(labelId);
+            };
+
+            const hoveredFaceKey = String(this._hoveredFaceKey || '');
+            const hoveredSurfaceId = hoveredFaceKey
+                ? (this._geomSurfaceIdByFaceKey.get(hoveredFaceKey) || `surface:${hoveredFaceKey}`)
+                : null;
+
+            const hoveredEdgeKey = String(this._hoveredEdgeKey || '');
+            let hoveredSegmentId = null;
+            let hoveredBoundaryId = null;
+            if (hoveredEdgeKey) {
+                hoveredSegmentId = this._geomSegmentIdByEdgeKey.get(hoveredEdgeKey) || null;
+                hoveredBoundaryId = this._geomBoundaryIdByLoopKey.get(hoveredEdgeKey) || null;
+                if (!hoveredSegmentId && !hoveredBoundaryId) {
+                    const edge = this.getEdgeByKey(hoveredEdgeKey);
+                    if (edge?.solidId && Number.isFinite(edge?.faceId) && Number.isFinite(edge?.index)) {
+                        const basisKey = `faceedge:${edge.solidId}:${edge.faceId}:${edge.index}`;
+                        hoveredSegmentId = this._geomSegmentIdByEdgeKey.get(basisKey) || null;
+                    }
+                }
+                if (!hoveredBoundaryId && hoveredSegmentId) {
+                    hoveredBoundaryId = String(segById.get(hoveredSegmentId)?.boundary_id || '') || null;
+                }
+            }
+
+            if (prefs.showBoundaries) {
+                const sketchDerived = this.getSketchDerivedBoundarySegments();
+                if (sketchDerived.length) {
+                    const positions = [];
+                    for (const seg of sketchDerived) {
+                        // Sketch-derived loop points are generated from sketch plane
+                        // frames in the same modeling frame as `space.WORLD` (root local).
+                        // Do not apply an additional world->root conversion here or the
+                        // debug boundaries will rotate off-axis by the WORLD transform.
+                        const a = seg.a;
+                        const b = seg.b;
+                        positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
+                    }
+                    if (positions.length) {
+                        const geom = new THREE.BufferGeometry();
+                        geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                        const mat = new THREE.LineBasicMaterial({
+                            color: 0x6ee7b7,
+                            transparent: true,
+                            opacity: 0.95,
+                            depthTest: false,
+                            depthWrite: false
+                        });
+                        const lines = new THREE.LineSegments(geom, mat);
+                        lines.renderOrder = 95;
+                        this._debugGroup.add(lines);
+                    }
+                } else {
+                    for (const boundary of boundaries) {
+                        const segmentIds = Array.isArray(boundary?.segment_ids) ? boundary.segment_ids : [];
+                        if (!segmentIds.length) continue;
+                        const positions = [];
+                        for (const segmentId of segmentIds) {
+                            const seg = segById.get(String(segmentId || ''));
+                            if (!seg?.a || !seg?.b) continue;
+                            const a = toRootLocal(vec3FromRecord(seg.a));
+                            const b = toRootLocal(vec3FromRecord(seg.b));
+                            positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
+                        }
+                        if (!positions.length) continue;
+                        const color = colorFromId(boundary?.id, 62, 56);
+                        const geom = new THREE.BufferGeometry();
+                        geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                        const mat = new THREE.LineBasicMaterial({
+                            color,
+                            transparent: true,
+                            opacity: 0.9,
+                            depthTest: false,
+                            depthWrite: false
+                        });
+                        const lines = new THREE.LineSegments(geom, mat);
+                        lines.renderOrder = 95;
+                        this._debugGroup.add(lines);
+                    }
+                }
+            }
+
+            if (prefs.showSegments) {
+                for (const seg of segments) {
+                    if (!seg?.a || !seg?.b) continue;
+                    const a = toRootLocal(vec3FromRecord(seg.a));
+                    const b = toRootLocal(vec3FromRecord(seg.b));
+                    const geom = new THREE.BufferGeometry();
+                    geom.setAttribute('position', new THREE.Float32BufferAttribute([
+                        a.x, a.y, a.z,
+                        b.x, b.y, b.z
+                    ], 3));
+                    const mat = new THREE.LineBasicMaterial({
+                        color: 0x66d9ef,
+                        transparent: true,
+                        opacity: 0.95,
+                        depthTest: false,
+                        depthWrite: false
+                    });
+                    const line = new THREE.LineSegments(geom, mat);
+                    line.renderOrder = 96;
+                    this._debugGroup.add(line);
+                }
+            }
+
+            if (prefs.showSegmentLabels) {
+                const shown = [];
+                if (hoveredBoundaryId) {
+                    const boundary = boundaryById.get(String(hoveredBoundaryId || ''));
+                    const ids = Array.isArray(boundary?.segment_ids) ? boundary.segment_ids : [];
+                    for (const sid of ids) {
+                        const seg = segById.get(String(sid || ''));
+                        if (seg) shown.push(seg);
+                    }
+                } else if (hoveredSegmentId) {
+                    const seg = segById.get(String(hoveredSegmentId || ''));
+                    if (seg) shown.push(seg);
+                }
+                for (const seg of shown) {
+                    const mid = seg?.mid || null;
+                    if (!mid) continue;
+                    const text = String(seg?.id || 'segment');
+                    addLabel(`segment:${text}`, text, vec3FromRecord(mid), '#9ad9ff');
+                }
+            }
+
+            if (prefs.showSurfaceLabels) {
+                if (hoveredSurfaceId) {
+                    const surface = surfaceById.get(String(hoveredSurfaceId || ''));
+                    const center = surface?.center || null;
+                    if (center) {
+                        const text = String(surface?.id || 'surface');
+                        addLabel(`surface:${text}`, text, vec3FromRecord(center), '#ffcf7a');
+                    }
+                }
+            }
+
+            if (prefs.showRegionLabels) {
+                for (const region of regions) {
+                    if (hoveredSurfaceId && String(region?.surface_id || '') !== String(hoveredSurfaceId)) {
+                        continue;
+                    }
+                    const boundaryIds = Array.isArray(region?.boundary_ids) ? region.boundary_ids : [];
+                    const boundary = boundaryById.get(String(boundaryIds[0] || ''));
+                    const segIds = Array.isArray(boundary?.segment_ids) ? boundary.segment_ids : [];
+                    let anchor = null;
+                    if (segIds.length) {
+                        const sum = new THREE.Vector3();
+                        let count = 0;
+                        for (const sid of segIds) {
+                            const seg = segById.get(String(sid || ''));
+                            if (!seg?.mid) continue;
+                            sum.add(vec3FromRecord(seg.mid));
+                            count++;
+                        }
+                        if (count) {
+                            anchor = sum.multiplyScalar(1 / count);
+                        }
+                    }
+                    if (!anchor && region?.surface_id) {
+                        const surface = surfaceById.get(String(region.surface_id));
+                        if (surface?.center) anchor = vec3FromRecord(surface.center);
+                    }
+                    if (!anchor) continue;
+                    const text = String(region?.id || 'region');
+                    addLabel(`region:${text}`, text, anchor, '#ff9dc2');
+                }
+            }
+
+            if (prefs.showPatchLabels) {
+                const shown = [];
+                if (hoveredSurfaceId) {
+                    for (const patch of patches) {
+                        if (String(patch?.surface_id || '') === String(hoveredSurfaceId)) {
+                            shown.push(patch);
+                        }
+                    }
+                } else if (hoveredSurfaceId === null && hoveredEdgeKey) {
+                    // edge hover only path fallback: show matching patch by boundary id
+                    if (hoveredBoundaryId) {
+                        for (const patch of patches) {
+                            const bids = Array.isArray(patch?.boundary_ids) ? patch.boundary_ids : [];
+                            if (bids.includes(hoveredBoundaryId)) shown.push(patch);
+                        }
+                    }
+                }
+                for (const patch of shown) {
+                    const regionId = String(patch?.source_region_id || '');
+                    const boundaryIds = Array.isArray(patch?.boundary_ids) ? patch.boundary_ids : [];
+                    const boundary = boundaryById.get(String(boundaryIds[0] || ''));
+                    const segIds = Array.isArray(boundary?.segment_ids) ? boundary.segment_ids : [];
+                    let anchor = null;
+                    if (segIds.length) {
+                        const sum = new THREE.Vector3();
+                        let count = 0;
+                        for (const sid of segIds) {
+                            const seg = segById.get(String(sid || ''));
+                            if (!seg?.mid) continue;
+                            sum.add(vec3FromRecord(seg.mid));
+                            count++;
+                        }
+                        if (count) anchor = sum.multiplyScalar(1 / count);
+                    }
+                    if (!anchor && patch?.surface_id) {
+                        const surface = surfaceById.get(String(patch.surface_id));
+                        if (surface?.center) anchor = vec3FromRecord(surface.center);
+                    }
+                    if (!anchor) continue;
+                    const text = regionId
+                        ? `${String(patch?.id || 'patch')} -> ${regionId}`
+                        : String(patch?.id || 'patch');
+                    addLabel(`patch:${patch?.id || text}`, text, anchor, '#a6f57a');
+                }
+            }
+
+            api.overlay?.updateAll?.();
         },
 
         list() {
@@ -735,6 +1108,7 @@ function edgeKey(a, b) {
         },
 
         buildGeometryStoreSnapshot() {
+            this._root?.updateMatrixWorld?.(true);
             this._geomSurfaceIdByFaceKey = new Map();
             this._geomSegmentIdByEdgeKey = new Map();
             this._geomBoundaryIdByLoopKey = new Map();
@@ -745,10 +1119,13 @@ function edgeKey(a, b) {
             const segments = [];
             const points = [];
             const regions = [];
+            const surface_patches = [];
             const pointIdByKey = new Map();
             const topology = {
                 surface_to_segments: {},
-                segment_to_surfaces: {}
+                segment_to_surfaces: {},
+                patch_to_tris: {},
+                tri_to_patch: {}
             };
 
             const getPointId = (p, role = 'boundary-vertex') => {
@@ -769,13 +1146,28 @@ function edgeKey(a, b) {
             };
 
             for (const [solidId, view] of this._meshViews.entries()) {
+                const solid = this.list().find(item => String(item?.id || '') === String(solidId)) || null;
+                const sourceProfileKeys = Array.isArray(solid?.source?.profile_keys)
+                    ? solid.source.profile_keys.map(key => String(key || '')).filter(Boolean)
+                    : [];
+                const primarySourceRegion = sourceProfileKeys.length === 1 ? sourceProfileKeys[0] : null;
                 if (!view?.faceGroups?.size) continue;
                 for (const [faceId, meta] of view.faceGroups.entries()) {
                     const faceKey = `${solidId}:${faceId}`;
                     const surfaceId = `surface:${faceKey}`;
                     const loops = this.getFaceBoundaryLoops(faceKey) || [];
-                    const normal = meta?.normal || {};
-                    const center = meta?.center || {};
+                    const mesh = view?.mesh || null;
+                    const normalLocal = meta?.normal || new THREE.Vector3(0, 0, 1);
+                    const centerLocal = meta?.center || new THREE.Vector3();
+                    // GeometryStore should store scene/world-space coordinates.
+                    // Face loops already do this via `getFaceBoundaryLoops()`.
+                    // Keep surface center/normal in the same space for consistency.
+                    const normal = normalLocal?.clone?.() && mesh?.matrixWorld
+                        ? normalLocal.clone().transformDirection(mesh.matrixWorld).normalize()
+                        : normalLocal;
+                    const center = centerLocal?.clone?.() && mesh?.matrixWorld
+                        ? centerLocal.clone().applyMatrix4(mesh.matrixWorld)
+                        : centerLocal;
                     surfaces.push({
                         id: surfaceId,
                         solid_id: solidId,
@@ -868,6 +1260,24 @@ function edgeKey(a, b) {
                                 loop_index: li
                             }
                         });
+                        const patchId = `surface-patch:${faceKey}:${li}`;
+                        const sourceRegionIds = sourceProfileKeys.slice();
+                        surface_patches.push({
+                            id: patchId,
+                            surface_id: surfaceId,
+                            boundary_ids: [boundaryId],
+                            source_region_id: primarySourceRegion,
+                            source_region_ids: sourceRegionIds,
+                            solid_id: solidId,
+                            face_id: faceId,
+                            status: 'seed',
+                            source: {
+                                type: 'solid-face-loop',
+                                face_key: faceKey,
+                                loop_index: li,
+                                feature_id: solid?.source?.feature_id || null
+                            }
+                        });
                     }
                     topology.surface_to_segments[surfaceId] = surfaceSegmentIds;
                 }
@@ -878,6 +1288,7 @@ function edgeKey(a, b) {
                 segments,
                 points,
                 regions,
+                surface_patches,
                 topology,
                 meta: {
                     feature_count: Number(getApi()?.features?.list?.()?.length || 0)
@@ -1080,6 +1491,9 @@ function edgeKey(a, b) {
             if (doc) {
                 const snapshot = this.buildGeometryStoreSnapshot();
                 api.geometryStore?.applySolidSnapshot?.(doc, snapshot);
+                this.syncDebugOverlays(snapshot);
+            } else {
+                this.syncDebugOverlays(null);
             }
         },
 
@@ -1984,6 +2398,9 @@ function edgeKey(a, b) {
             if (next === this._hoveredFaceKey) return;
             this._hoveredFaceKey = next;
             this.syncFaceOverlays();
+            if (this._debugPrefs?.showSurfaceLabels || this._debugPrefs?.showRegionLabels) {
+                this.syncDebugOverlays();
+            }
         },
 
         setSelectedFaces(keys = []) {
@@ -2015,6 +2432,9 @@ function edgeKey(a, b) {
             if (next === this._hoveredEdgeKey) return;
             this._hoveredEdgeKey = next;
             this.syncEdgeOverlays();
+            if (this._debugPrefs?.showSegmentLabels) {
+                this.syncDebugOverlays();
+            }
         },
 
         setSelectedEdges(keys = []) {
@@ -2055,6 +2475,25 @@ function edgeKey(a, b) {
             this._renderPrefs = merged;
             this.syncEdgeOverlays();
             return this.getRenderPreferences();
+        },
+
+        getDebugPreferences() {
+            return { ...(this._debugPrefs || {}) };
+        },
+
+        setDebugPreferences(next = {}) {
+            const curr = this._debugPrefs || {};
+            const merged = {
+                showBoundaries: next.showBoundaries !== undefined ? next.showBoundaries === true : !!curr.showBoundaries,
+                showSegments: next.showSegments !== undefined ? next.showSegments === true : !!curr.showSegments,
+                showSegmentLabels: next.showSegmentLabels !== undefined ? next.showSegmentLabels === true : !!curr.showSegmentLabels,
+                showSurfaceLabels: next.showSurfaceLabels !== undefined ? next.showSurfaceLabels === true : !!curr.showSurfaceLabels,
+                showRegionLabels: next.showRegionLabels !== undefined ? next.showRegionLabels === true : !!curr.showRegionLabels,
+                showPatchLabels: next.showPatchLabels !== undefined ? next.showPatchLabels === true : !!curr.showPatchLabels
+            };
+            this._debugPrefs = merged;
+            this.syncDebugOverlays();
+            return this.getDebugPreferences();
         },
 
         getSketchTargetForFaceKey(key) {

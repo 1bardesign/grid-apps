@@ -13,9 +13,12 @@ function createGeometryStoreApi(getApi) {
                 segments: [],
                 points: [],
                 regions: [],
+                surface_patches: [],
                 topology: {
                     surface_to_segments: {},
-                    segment_to_surfaces: {}
+                    segment_to_surfaces: {},
+                    patch_to_tris: {},
+                    tri_to_patch: {}
                 },
                 meta: {
                     feature_count: 0,
@@ -35,9 +38,16 @@ function createGeometryStoreApi(getApi) {
             out.segments = Array.isArray(out.segments) ? out.segments : [];
             out.points = Array.isArray(out.points) ? out.points : [];
             out.regions = Array.isArray(out.regions) ? out.regions : [];
+            out.surface_patches = Array.isArray(out.surface_patches) ? out.surface_patches : [];
             out.topology = out.topology && typeof out.topology === 'object'
                 ? out.topology
                 : base.topology;
+            out.topology.patch_to_tris = out.topology.patch_to_tris && typeof out.topology.patch_to_tris === 'object'
+                ? out.topology.patch_to_tris
+                : {};
+            out.topology.tri_to_patch = out.topology.tri_to_patch && typeof out.topology.tri_to_patch === 'object'
+                ? out.topology.tri_to_patch
+                : {};
             out.meta = out.meta && typeof out.meta === 'object'
                 ? out.meta
                 : base.meta;
@@ -84,6 +94,7 @@ function createGeometryStoreApi(getApi) {
             state.segments = Array.isArray(snapshot.segments) ? snapshot.segments : [];
             state.points = Array.isArray(snapshot.points) ? snapshot.points : [];
             state.regions = Array.isArray(snapshot.regions) ? snapshot.regions : [];
+            state.surface_patches = Array.isArray(snapshot.surface_patches) ? snapshot.surface_patches : [];
             state.topology = snapshot.topology && typeof snapshot.topology === 'object'
                 ? snapshot.topology
                 : state.topology;

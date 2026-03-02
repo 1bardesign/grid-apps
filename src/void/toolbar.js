@@ -1082,12 +1082,19 @@ const toolbar = {
             edgeSelectedLineWidth: 3.25,
             sketchArcSegmentLength: 2.5,
             fitPaddingPerspective: 0.5,
-            fitPaddingOrthographic: 0.9
+            fitPaddingOrthographic: 0.9,
+            debugShowBoundaries: false,
+            debugShowSegments: false,
+            debugShowSegmentLabels: false,
+            debugShowSurfaceLabels: false,
+            debugShowRegionLabels: false,
+            debugShowPatchLabels: false
         };
     },
 
     normalizePreferences(raw = {}) {
         const d = this.getDefaultPreferences();
+        const toBool = value => value === true || value === 'true' || value === 1 || value === '1';
         return {
             edgeLoopPromotionSegments: Math.max(3, Math.round(Number(raw.edgeLoopPromotionSegments ?? d.edgeLoopPromotionSegments) || d.edgeLoopPromotionSegments)),
             edgeHoverLineWidth: Math.max(0.5, Number(raw.edgeHoverLineWidth ?? d.edgeHoverLineWidth) || d.edgeHoverLineWidth),
@@ -1097,7 +1104,13 @@ const toolbar = {
                 Number(raw.sketchArcSegmentLength ?? raw.sketchArcSegments ?? d.sketchArcSegmentLength) || d.sketchArcSegmentLength
             ),
             fitPaddingPerspective: Math.max(0.01, Number(raw.fitPaddingPerspective ?? d.fitPaddingPerspective) || d.fitPaddingPerspective),
-            fitPaddingOrthographic: Math.max(0.01, Number(raw.fitPaddingOrthographic ?? d.fitPaddingOrthographic) || d.fitPaddingOrthographic)
+            fitPaddingOrthographic: Math.max(0.01, Number(raw.fitPaddingOrthographic ?? d.fitPaddingOrthographic) || d.fitPaddingOrthographic),
+            debugShowBoundaries: toBool(raw.debugShowBoundaries ?? d.debugShowBoundaries),
+            debugShowSegments: toBool(raw.debugShowSegments ?? d.debugShowSegments),
+            debugShowSegmentLabels: toBool(raw.debugShowSegmentLabels ?? d.debugShowSegmentLabels),
+            debugShowSurfaceLabels: toBool(raw.debugShowSurfaceLabels ?? d.debugShowSurfaceLabels),
+            debugShowRegionLabels: toBool(raw.debugShowRegionLabels ?? d.debugShowRegionLabels),
+            debugShowPatchLabels: toBool(raw.debugShowPatchLabels ?? d.debugShowPatchLabels)
         };
     },
 
@@ -1137,6 +1150,14 @@ const toolbar = {
             edgeHoverLineWidth: prefs.edgeHoverLineWidth,
             edgeSelectedLineWidth: prefs.edgeSelectedLineWidth
         });
+        api.solids?.setDebugPreferences?.({
+            showBoundaries: prefs.debugShowBoundaries,
+            showSegments: prefs.debugShowSegments,
+            showSegmentLabels: prefs.debugShowSegmentLabels,
+            showSurfaceLabels: prefs.debugShowSurfaceLabels,
+            showRegionLabels: prefs.debugShowRegionLabels,
+            showPatchLabels: prefs.debugShowPatchLabels
+        });
         api.sketchRuntime?.setRenderPreferences?.({
             arcSegmentLength: prefs.sketchArcSegmentLength
         });
@@ -1161,6 +1182,12 @@ const toolbar = {
         if (inputs.sketchArcSegmentLength) inputs.sketchArcSegmentLength.value = String(prefs.sketchArcSegmentLength);
         if (inputs.fitPaddingPerspective) inputs.fitPaddingPerspective.value = String(prefs.fitPaddingPerspective);
         if (inputs.fitPaddingOrthographic) inputs.fitPaddingOrthographic.value = String(prefs.fitPaddingOrthographic);
+        if (inputs.debugShowBoundaries) inputs.debugShowBoundaries.checked = !!prefs.debugShowBoundaries;
+        if (inputs.debugShowSegments) inputs.debugShowSegments.checked = !!prefs.debugShowSegments;
+        if (inputs.debugShowSegmentLabels) inputs.debugShowSegmentLabels.checked = !!prefs.debugShowSegmentLabels;
+        if (inputs.debugShowSurfaceLabels) inputs.debugShowSurfaceLabels.checked = !!prefs.debugShowSurfaceLabels;
+        if (inputs.debugShowRegionLabels) inputs.debugShowRegionLabels.checked = !!prefs.debugShowRegionLabels;
+        if (inputs.debugShowPatchLabels) inputs.debugShowPatchLabels.checked = !!prefs.debugShowPatchLabels;
     },
 
     buildPreferencesDialog() {
@@ -1191,6 +1218,28 @@ const toolbar = {
             const input = document.createElement('input');
             input.type = 'number';
             input.step = String(step);
+            input.className = 'prefs-input';
+            if (help) {
+                input.title = help;
+            }
+            row.appendChild(name);
+            row.appendChild(input);
+            list.appendChild(row);
+            this.preferencesInputs = this.preferencesInputs || {};
+            this.preferencesInputs[key] = input;
+        };
+        const makeCheckboxRow = (label, key, help = '') => {
+            const row = document.createElement('div');
+            row.className = 'doc-dialog-row prefs-row';
+            const name = document.createElement('div');
+            name.className = 'doc-dialog-name';
+            name.textContent = label;
+            if (help) {
+                name.title = help;
+                row.title = help;
+            }
+            const input = document.createElement('input');
+            input.type = 'checkbox';
             input.className = 'prefs-input';
             if (help) {
                 input.title = help;
@@ -1238,6 +1287,36 @@ const toolbar = {
             '0.01',
             'Extra margin used by Fit view in orthographic mode. Tune this separately from perspective for CAD-like framing.'
         );
+        makeCheckboxRow(
+            'Debug: Show Boundaries',
+            'debugShowBoundaries',
+            'Render boundary loops from GeometryStore in 3D to verify boundary extraction and provenance partitioning.'
+        );
+        makeCheckboxRow(
+            'Debug: Show Segments',
+            'debugShowSegments',
+            'Render every boundary segment from GeometryStore in cyan for dense topology inspection.'
+        );
+        makeCheckboxRow(
+            'Debug: Segment Labels',
+            'debugShowSegmentLabels',
+            'Draw 2D overlay labels for segment IDs at segment midpoints.'
+        );
+        makeCheckboxRow(
+            'Debug: Surface Labels',
+            'debugShowSurfaceLabels',
+            'Draw 2D overlay labels for canonical surface IDs at surface centers.'
+        );
+        makeCheckboxRow(
+            'Debug: Region Labels',
+            'debugShowRegionLabels',
+            'Draw 2D overlay labels for canonical region IDs using boundary centroid anchors.'
+        );
+        makeCheckboxRow(
+            'Debug: Patch Labels',
+            'debugShowPatchLabels',
+            'Draw hover-scoped labels for seeded surface patch IDs and mapped source region IDs.'
+        );
         const actions = document.createElement('div');
         actions.className = 'doc-dialog-actions';
         const defaultsBtn = this.addButton(actions, 'Defaults', () => {
@@ -1251,7 +1330,13 @@ const toolbar = {
                 edgeSelectedLineWidth: Number(this.preferencesInputs?.edgeSelectedLineWidth?.value),
                 sketchArcSegmentLength: Number(this.preferencesInputs?.sketchArcSegmentLength?.value),
                 fitPaddingPerspective: Number(this.preferencesInputs?.fitPaddingPerspective?.value),
-                fitPaddingOrthographic: Number(this.preferencesInputs?.fitPaddingOrthographic?.value)
+                fitPaddingOrthographic: Number(this.preferencesInputs?.fitPaddingOrthographic?.value),
+                debugShowBoundaries: !!this.preferencesInputs?.debugShowBoundaries?.checked,
+                debugShowSegments: !!this.preferencesInputs?.debugShowSegments?.checked,
+                debugShowSegmentLabels: !!this.preferencesInputs?.debugShowSegmentLabels?.checked,
+                debugShowSurfaceLabels: !!this.preferencesInputs?.debugShowSurfaceLabels?.checked,
+                debugShowRegionLabels: !!this.preferencesInputs?.debugShowRegionLabels?.checked,
+                debugShowPatchLabels: !!this.preferencesInputs?.debugShowPatchLabels?.checked
             }, { persist: true, updateFields: true });
         });
         applyBtn.classList.add('compact');

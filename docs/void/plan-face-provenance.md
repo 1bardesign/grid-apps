@@ -4,6 +4,28 @@
 
 Track which portions of resulting solids come from which sketch extrude regions, including after union/subtract, while keeping storage compact and spline-ready.
 
+## Execution Status (2026-03-02)
+
+Completed:
+
+1. Plan authored and staged into phased implementation.
+2. Debug visualization toggles added to preferences and wired to solids runtime:
+3. Boundary loop rendering from GeometryStore.
+4. Segment rendering from GeometryStore.
+5. Segment/surface/region ID labels (overlay text).
+6. Fixed world/local debug overlay transform bug:
+7. GeometryStore points are world-space; line geometry parented under solids root must convert world -> root local because `space.WORLD` is rotated -90deg on X.
+
+In progress:
+
+1. Converting this plan into code-level milestone execution with strict acceptance checks.
+
+Next up:
+
+1. Add first `surface_patch_id` selection plumbing (read-only pass-through).
+2. Thread Manifold relation metadata through kernel adapters.
+3. Start mixed-face partition scaffold from seeded `surface_patches`.
+
 ## Decisions
 
 1. Primary provenance is `boundary/region/surface-patch`, not raw triangle ownership.
@@ -120,6 +142,7 @@ This enables deterministic attribution from boolean output back to input generat
 
 1. Add `surface_patches` schema and runtime index container.
 2. Introduce generic segment schema (`kind + geom`) with current line/arc emitters.
+3. Add compatibility normalizer for older docs (missing `surface_patches`).
 
 ### Phase 2: Kernel Metadata Plumbing
 
@@ -163,6 +186,39 @@ Regression guardrails:
 1. No persisted triangle tables in doc snapshots.
 2. No schema changes required to add spline segment kind later.
 3. Selection never reports mixed-source face entities.
+4. Any debug/runtime geometry under solids root must explicitly convert GeometryStore world coordinates to root-local coordinates.
+
+## Implementation Checklist
+
+Phase 1:
+
+1. Done: update `src/void/api/geometry_store.js` schema to include `surface_patches` and runtime topology patch map container.
+2. Done: extend `buildGeometryStoreSnapshot()` in `src/void/api/solids.js` to emit seeded `surface_patches` per face-loop with source-region candidate fields.
+3. In progress: keep current face-key canonical mapping intact while adding optional patch ID fields.
+
+Phase 2:
+
+1. Update `src/void/solid/kernel.js` mesh conversion to preserve manifold relation fields:
+2. Input pass-through where provided (`runOriginalID`, `runIndex`, `faceID`, etc.).
+3. Output pass-through into rebuild intermediate structures.
+4. Add worker payload support for relation arrays when present.
+
+Phase 3:
+
+1. Implement mixed-source detection in `src/void/solid/rebuild.js`.
+2. Add per-surface local partition pass and emit patch boundaries.
+3. Assign one canonical `source_region_id` per patch.
+
+Phase 4:
+
+1. Extend selection resolver and solids hit mapping to prefer patch IDs over raw face IDs.
+2. Add properties/tree hover mapping from extrude profile -> patch IDs.
+3. Remove coarse fallback once parity checks pass.
+
+Phase 5:
+
+1. Add deterministic integration tests for union/subtract split-face provenance.
+2. Remove temporary migration branches and finalize docs.
 
 ## Acceptance Criteria
 
