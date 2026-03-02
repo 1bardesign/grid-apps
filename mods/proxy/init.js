@@ -37,11 +37,11 @@ function proxy_post(req, res, next) {
                         },
                         body: req.app.post
                     }).then(result => {
-                        console.log({ result });
                         if (result.ok) {
                             res.writeHead(200, 'OK');
                         } else {
                             res.writeHead(500, 'Failed to proxy');
+                            console.log({ result });
                         }
                         res.end();
                     });
