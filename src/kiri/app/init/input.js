@@ -360,6 +360,8 @@ export function init_input() {
     // override old style settings two-button menu
     ui.settingsSave.onclick = () => {
         settingsOps.settings_save(undefined, ui.settingsName.value);
+        // update pulldowns
+        api.devices.refresh();
     };
 
     // initialize and expose modal to API
