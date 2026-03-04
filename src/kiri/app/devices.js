@@ -424,5 +424,6 @@ function updateDeviceSelector(devices, selector, selected) {
         const seldev = dev_list.options[dev_list.selectedIndex];
         selectDevice(seldev.innerText);
         api.platform.layout();
+        updateDeviceList();
     }
 }

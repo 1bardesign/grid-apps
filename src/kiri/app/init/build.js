@@ -1,9 +1,9 @@
 /** Copyright Stewart Allen <sa@grid.space> -- All Rights Reserved */
 
-import { menubar } from './menubar.js';
-import { api } from './api.js';
+import { menubar } from './menu.js';
+import { api } from '../api.js';
 
-const toolbar = {
+const surfaces = {
     build(actions = {}) {
         const stop = (fn) => (ev) => {
             ev?.stopPropagation?.();
@@ -20,4 +20,4 @@ const toolbar = {
     }
 };
 
-export { toolbar };
+export { surfaces };

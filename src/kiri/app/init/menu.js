@@ -1,7 +1,7 @@
 /** Copyright Stewart Allen <sa@grid.space> -- All Rights Reserved */
 
-import { $, h } from '../../moto/webui.js';
-import { api } from './api.js';
+import { $, h } from '../../../moto/webui.js';
+import { api } from '../api.js';
 
 const { div, span, label, input, button, i, hr } = h;
 
@@ -49,13 +49,6 @@ function topMenu(actions, { text, lk, iconClass, side = 'left', right = false, i
         resolved !== undefined ? label({ ...(lk ? { lk } : {}), _: resolved }) : undefined,
         iconClass ? icon(iconClass) : undefined,
         dropMenu(actions, side, items)
-    ]);
-}
-
-function toolbarToolNozzle() {
-    return span({ id: 'tool-nozzle' }, [
-        label({ lk: 'tool', _: tr('tool', 'tool') }),
-        div({ id: 'ft-nozzle', class: 'f-col pop' })
     ]);
 }
 
@@ -180,7 +173,10 @@ function content(actions) {
                 ]
             }),
             div({ class: 'f-row top-menu' }, [
-                toolbarToolNozzle()
+                span({ id: 'tool-nozzle' }, [
+                    label({ lk: 'tool', _: tr('tool', 'tool') }),
+                    div({ id: 'ft-nozzle', class: 'f-col pop' })
+                ])
             ]),
             div({ class: 'grow' }),
             topMenu(actions, {

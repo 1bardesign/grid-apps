@@ -10,7 +10,7 @@ import { api } from '../kiri/app/api.js';
 import { init_lang } from '../kiri/app/init/lang.js';
 import { init_input } from '../kiri/app/init/input.js';
 import { init_sync } from '../kiri/app/init/sync.js';
-import { toolbar } from '../kiri/app/toolbar.js';
+import { surfaces } from '../kiri/app/init/build.js';
 
 let traceload = location.search.indexOf('traceload') > 0;
 let load = [];
@@ -37,7 +37,7 @@ async function checkReady() {
         {
             api.client.start();
             await init_lang();
-            toolbar.build();
+            surfaces.build();
             await init_input();
             await init_sync();
         }
