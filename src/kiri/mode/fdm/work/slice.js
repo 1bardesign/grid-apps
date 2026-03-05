@@ -318,6 +318,10 @@ export function sliceOne(settings, widget, onupdate, ondone) {
         }
     }
 
+    if (isConcurrent) {
+        minions.setPoints(points);
+    }
+
     // create Slice objects for specified list of Z heights
     // zGen() produces the list (or empty for slicer auto-detected)
     slice(points, {
@@ -326,6 +330,7 @@ export function sliceOne(settings, widget, onupdate, ondone) {
         xray: process.xray,
         zMin: bounds.min.z,
         zMax: bounds.max.z - zCut,
+        bucketMin: minions.concurrent * 5,
         union: controller.healMesh,
         indices: process.indices || process.xray,
         useAssembly,
@@ -351,6 +356,9 @@ export function sliceOne(settings, widget, onupdate, ondone) {
     })
     .then(decodeSlices)
     .then(processSlices)
+    .then(() => {
+        minions.setPoints([]);
+    })
     .then(ondone);
 
     // z index generator (bottom up)

@@ -39,7 +39,7 @@ let drivers = {
         WJET
     },
     ccvalue = self.navigator ? self.navigator.hardwareConcurrency || 0 : 0,
-    concurrent = Math.min(4, self.Worker && ccvalue > 3 ? ccvalue - 1 : 0),
+    concurrent = Math.round(Math.max(4, self.Worker && ccvalue > 3 ? ccvalue * 0.75 : 0)),
     current = {
         print: null,
         snap: null,
@@ -174,6 +174,16 @@ const minwork = {
         }
     },
 
+    setPoints(points) {
+        let i = 0, floatP = new Float32Array(points.length * 3);
+        for (let p of points) {
+            floatP[i++] = p.x;
+            floatP[i++] = p.y;
+            floatP[i++] = p.z;
+        }
+        minwork.broadcast("setPoints", { points: floatP });
+    },
+
     // added functions (should be namespaced)
 
     subtract({ a, b, outA, outB, z, area, wasm }) {
@@ -285,17 +295,9 @@ const minwork = {
                 reject("concurrent slice unavaiable");
             }
             let { each } = options;
-            // todo use shared array buffer?
-            let i = 0, floatP = new Float32Array(points.length * 3);
-            for (let p of points) {
-                floatP[i++] = p.x;
-                floatP[i++] = p.y;
-                floatP[i++] = p.z;
-            }
             minwork.queue({
                 cmd: "sliceZ",
                 z,
-                points: floatP,
                 options: codec.toCodable(options)
             }, data => {
                 let recs = codec.decode(data.output);
@@ -305,7 +307,7 @@ const minwork = {
                     }
                 }
                 resolve(recs);
-            }, [ floatP.buffer ]);
+            });
         });
     },
 };
