@@ -278,6 +278,8 @@ async function rebuildGeneratedSolidsFromSnapshot(snapshot, options = {}) {
             const operation = ['new', 'add', 'subtract'].includes(String(params.operation || 'new'))
                 ? String(params.operation || 'new')
                 : 'new';
+            // Symmetric is a single extrusion whose local span is shifted to
+            // [-depth/2, +depth/2], not two opposing extrusions/union.
             const localZShift = symmetric ? (-depth / 2) : (direction === 'reverse' ? -depth : 0);
             const createdBodyIds = [];
             const bySketch = new Map();

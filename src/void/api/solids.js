@@ -1756,7 +1756,9 @@ function edgeKey(a, b) {
                     const mesh = new THREE.Mesh(built.render, this._material.clone());
                     mesh.userData.solidId = id;
                     mesh.userData.solid = true;
-                    const edgesGeom = new THREE.EdgesGeometry(built.render, SOLID_CREASE_ANGLE_DEG);
+                    // Derive visible hard edges from indexed manifold topology, not the
+                    // creased render geometry, to avoid triangle/split seam artifacts.
+                    const edgesGeom = new THREE.EdgesGeometry(built.indexed, SOLID_CREASE_ANGLE_DEG);
                     const edges = new THREE.LineSegments(edgesGeom, this._edgeMaterial.clone());
                     edges.userData.solidId = id;
                     edges.userData.solidEdge = true;
@@ -1807,7 +1809,7 @@ function edgeKey(a, b) {
                     const built = buildSolidGeometry(meshData);
                     view.mesh.geometry = built.render;
                     view.indexedGeometry = built.indexed;
-                    view.edges.geometry = new THREE.EdgesGeometry(built.render, SOLID_CREASE_ANGLE_DEG);
+                    view.edges.geometry = new THREE.EdgesGeometry(built.indexed, SOLID_CREASE_ANGLE_DEG);
                 }
                 // Build selectable face regions from the same geometry used for ray hits.
                 // This keeps surface-region hover/selection aligned with rendered shading.

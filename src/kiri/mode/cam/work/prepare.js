@@ -138,6 +138,7 @@ export async function prepare_one(widget, settings, print, firstPoint, update) {
         toolType,
         toolDiam,
         toolDiamMove,
+        toolDiamEpsilon,
         travelBounds,
         spindle = 0,
         spindleMax = device.spindleMax,
@@ -211,6 +212,7 @@ export async function prepare_one(widget, settings, print, firstPoint, update) {
             toolType = tool.getType();
             toolDiam = tool.fluteDiameter();
             toolDiamMove = (tool.hasTaper() ? tolerance ?? toolDiam : toolDiam) * 2;
+            toolDiamEpsilon = toolDiam * 0.01,
             lastTool = toolID;
         }
         feedRate = Math.min(camFastFeed, feed || feedRate || plunge);
@@ -593,9 +595,11 @@ export async function prepare_one(widget, settings, print, firstPoint, update) {
             if (lastTravelBounds) check.push(...lastTravelBounds);
             let from = toWidgetCoords(printPoint);
             let to = toWidgetCoords(point);
+            let ep = toolDiamEpsilon;
             for (let poly of check) {
-                let ints = poly.intersections(from, to);
-                if (ints.length) {
+                let ints = poly.intersections(from, to) ?? [];
+                let far = ints.filter(p => p.distTo2D(to) > ep && p.distTo2D(from) > ep);
+                if (far.length) {
                     if (debug) console.log({ ints, poly, deltaXY, deltaZ });
                     upAndOver = "bounds";
                     break;
