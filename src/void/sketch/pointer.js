@@ -343,8 +343,7 @@ function handleSketchMouseUp(event, intersections) {
         const upHit = this.resolveSketchHit(event, intersections, feature);
         const hit = upHit
             || (pointerDown?.hitId ? { id: pointerDown.hitId, type: pointerDown?.hitType || null } : null)
-            || (pointerDown?.hoveredHitId ? { id: pointerDown.hoveredHitId, type: pointerDown?.hoveredHitType || null } : null)
-            || (this.hoveredSketchEntityId ? { id: this.hoveredSketchEntityId } : null);
+            || (pointerDown?.hoveredHitId ? { id: pointerDown.hoveredHitId, type: pointerDown?.hoveredHitType || null } : null);
         if (hit?.id) {
             if (dist > SKETCH_DRAG_START_PX && pointerDown?.hitId) {
                 // Intended drag gesture that failed to initialize; do not toggle select on mouse-up.

@@ -310,6 +310,9 @@ const interact = {
             }
         }, () => {
             this.handleHover();
+            if (this.isSketchEditing()) {
+                this.handleSketchHover(null, []);
+            }
         });
 
         space.mouse.onDrag((delta, offset, isDone, intersections) => {

@@ -173,7 +173,10 @@ function startSketchCircularPatternMode() {
     const feature = this.getEditingSketchFeature();
     if (!feature) return false;
     const centerRef = this.getSelectedSketchPatternCenter(feature);
-    if (!centerRef) return false;
+    if (!centerRef) {
+        window.alert('Circular pattern requires exactly one anchor point selected.');
+        return false;
+    }
     this.sketchCircularPatternMode = true;
     this.sketchCircularPatternCenterRef = centerRef;
     this.stopSketchMirrorMode?.();
@@ -206,7 +209,29 @@ function startSketchGridPatternMode() {
     const feature = this.getEditingSketchFeature();
     if (!feature) return false;
     const centerPointId = this.getSelectedSketchGridAnchor(feature);
-    if (!centerPointId) return false;
+    if (!centerPointId) {
+        window.alert('Grid pattern requires exactly one anchor point selected.');
+        return false;
+    }
+
+    // If line/arc sources are already selected, apply immediately.
+    const entities = Array.isArray(feature?.entities) ? feature.entities : [];
+    const byId = new Map(entities.filter(entity => entity?.id).map(entity => [entity.id, entity]));
+    const sourceIds = Array.from(this.selectedSketchEntities || [])
+        .filter(id => typeof id === 'string' && id && id !== centerPointId && !id.startsWith('arc-center:'))
+        .filter(id => {
+            const ent = byId.get(id);
+            return ent?.type === 'line' || ent?.type === 'arc';
+        });
+    if (sourceIds.length) {
+        const applied = this.gridPatternSelectedSketchGeometry?.({
+            centerRef: centerPointId,
+            sourceIds,
+            keepResultSelected: false
+        });
+        if (applied) return true;
+    }
+
     this.sketchGridPatternMode = true;
     this.sketchGridPatternCenterRef = centerPointId;
     this.stopSketchMirrorMode?.();
