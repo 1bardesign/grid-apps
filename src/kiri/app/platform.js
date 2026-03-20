@@ -979,6 +979,7 @@ function load_files(files, group) {
             isobj = lower.endsWith(".obj"),
             is3mf = lower.endsWith(".3mf"),
             issvg = lower.endsWith(".svg"),
+            isdxf = lower.endsWith(".dxf"),
             ispng = lower.endsWith(".png"),
             isjpg = lower.endsWith(".jpg"),
             iskmz = lower.endsWith(".kmz"),
@@ -1067,7 +1068,7 @@ function load_files(files, group) {
                 api.function.parse(data.textDecode('utf-8'), 'gcode');
                 load_dec();
             } else if (issvg) {
-                loadSVGDialog(opt => { 
+                loadSVGDialog(opt => {
                     group = group || [];
                     let svg = file_load.SVG.parse(data.textDecode('utf-8'), opt);
                     let ind = 0;
@@ -1077,6 +1078,19 @@ function load_files(files, group) {
                     }
                     for (let v of svg) {
                         load_verts(group, svg[ind++], ind ? `${name}-${ind}` : name);
+                    }
+                    load_dec();
+                });
+            } else if (isdxf) {
+                loadDXFDialog(opt => {
+                    group = group || [];
+                    let dxf = file_load.DXF.parse(data.textDecode('utf-8'), opt);
+                    let ind = 0;
+                    if (dxf.length === 0) {
+                        api.show.alert(`DXF contains no supported entities`, 10);
+                    }
+                    for (let v of dxf) {
+                        load_verts(group, dxf[ind++], ind ? `${name}-${ind}` : name);
                     }
                     load_dec();
                 });
@@ -1122,6 +1136,37 @@ function loadSVGDialog(doit) {
         let sdpi = Math.max(0, parseInt($('svg-dpi').value));
         let soup = $('svg-nest').checked;
         ok && doit({ soup, resolution: arcs, segmin: marc, depth, dpi: sdpi });
+    });
+}
+
+/**
+ * Show dialog to configure DXF import settings.
+ * Prompts for extrusion depth, arc segment size, and nesting.
+ * @param {Function} doit - Callback with options: {soup, depth, segmentSize, minSegments}
+ * @private
+ */
+function loadDXFDialog(doit) {
+    const opt = {pre: [
+        "<div class='f-col a-center'>",
+        "  <h3>Import DXF</h3>",
+        "  <p class='t-just' style='width:300px;line-height:1.5em'>",
+        "  Extrude a 3D model from a 2D DXF.",
+        "  Supports POLYLINE, LWPOLYLINE, LINE, CIRCLE, and ARC entities.",
+        "  </p>",
+        "  <div class='f-row t-right'><table>",
+        "  <tr><th>z height in mm</th><td><input id='dxf-depth' value='5' size='3'></td></tr>",
+        "  <tr><th title='target length of each line segment when converting arcs and circles'>arc segment size in mm</th><td><input id='dxf-seg' value='1' size='3'></td></tr>",
+        "  <tr><th title='minimum number of segments for very small arcs to avoid degenerate geometry'>minimum arc segments</th><td><input id='dxf-min' value='4' size='3'></td></tr>",
+        "  <tr><th>nest shapes</th><td><input id='dxf-nest' value='1' type='checkbox' checked></td></tr>",
+        "  </table></div>",
+        "</div>"
+    ]};
+    api.uc.confirm(undefined, {convert:true, cancel:false}, undefined, opt).then((ok) => {
+        let depth = Math.max(0.1, parseFloat($('dxf-depth').value));
+        let segmentSize = Math.max(0.01, parseFloat($('dxf-seg').value));
+        let minSegments = Math.max(3, parseInt($('dxf-min').value));
+        let soup = $('dxf-nest').checked;
+        ok && doit({ soup, depth, segmentSize, minSegments });
     });
 }
 

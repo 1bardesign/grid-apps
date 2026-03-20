@@ -4,7 +4,7 @@
 
 import { load_file } from './file.js';
 
-const { STL, OBJ, TMF, SVG } = load_file;
+const { STL, OBJ, TMF, SVG, DXF } = load_file;
 const CDH = 'Content-Disposition';
 
 export function load_url(url, options = {}) {
@@ -12,7 +12,7 @@ export function load_url(url, options = {}) {
         let xhr = new XMLHttpRequest();
         let file = options.file || options.filename || (((url.split('?')[0]).split('#')[0]).split('/')).pop();
         let ext = file.split('.').pop().toLowerCase();
-        let deftype = ext === "obj" || ext === 'svg' ? "text" : "arraybuffer";
+        let deftype = ext === "obj" || ext === 'svg' || ext === 'dxf' ? "text" : "arraybuffer";
         let datatype = options.datatype || deftype;
         let formdata = options.formdata;
 
@@ -54,6 +54,9 @@ export function load_url(url, options = {}) {
                         break;
                     case "svg":
                         resolve(SVG.parse(data).map(m => { return {mesh: m.toFloat32(), file} }));
+                        break;
+                    case "dxf":
+                        resolve(DXF.parse(data).map(m => { return {mesh: m.toFloat32(), file} }));
                         break;
                     default:
                         reject(`unknown file type: "${ext}" from ${url}`);
