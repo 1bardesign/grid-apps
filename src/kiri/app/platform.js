@@ -1156,7 +1156,7 @@ function loadDXFDialog(doit) {
         `  Supports POLYLINE, LWPOLYLINE, LINE, CIRCLE, ARC, and SPLINE entities.`,
         `  </p>`,
         `  <div class="f-row t-right image-convert-fields"><table>`,
-        `  <tr><th>units</th><td><select id="dxf-units-${rnd}"><option value="mm">millimeters</option><option value="inch">inches</option></select></td></tr>`,
+        `  <tr><th>units</th><td><select id="dxf-units-${rnd}"><option value="auto" selected>auto</option><option value="mm">millimeters</option><option value="inch">inches</option></select></td></tr>`,
         `  <tr><th>z height</th><td><input id="dxf-depth-${rnd}" value="5" size="3"></td></tr>`,
         `  <tr><th title="target length of each line segment when converting arcs and circles">arc segment size</th><td><input id="dxf-seg-${rnd}" value="1" size="3"></td></tr>`,
         `  <tr><th title="minimum number of segments for very small arcs to avoid degenerate geometry">minimum arc segments</th><td><input id="dxf-min-${rnd}" value="4" size="3"></td></tr>`,

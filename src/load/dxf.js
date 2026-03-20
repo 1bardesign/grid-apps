@@ -26,9 +26,10 @@ export function parse(text, opt = { }) {
     // Parse DXF file - normalize line endings and split
     const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(l => l.trim());
 
-    // Parse header for units (informational, can be overridden by user)
+    // Parse header for units (can be overridden by user)
     const fileUnits = extractUnits(lines);
-    const inputUnits = opt.units || fileUnits; // user can override file's declared units
+    // Use file units if "auto" or not specified, otherwise use user's choice
+    const inputUnits = (!opt.units || opt.units === 'auto') ? fileUnits : opt.units;
     const scale = getScaleToMM(inputUnits); // convert to mm (Kiri:Moto's internal unit)
 
     const entities = extractEntities(lines);
