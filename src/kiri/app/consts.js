@@ -133,6 +133,7 @@ const LISTS = {
         { name: "taper tip",  id: "tapermill" },
         { name: "taper ball", id: "taperball" },
         { name: "drill bit",  id: "drill" },
+        { name: "bullnose",   id: "bullnose" },
     ]
 };
 

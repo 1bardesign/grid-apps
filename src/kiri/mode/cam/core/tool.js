@@ -116,6 +116,10 @@ class Tool {
         return this.tool.type === "taperball";
     }
 
+    isBullnose() {
+        return this.tool.type === "bullnose";
+    }
+
     isDrill() {
         return this.tool.type === "drill";
     }
@@ -139,6 +143,7 @@ class Tool {
             taperball = this.isTaperBall(),
             taper = this.hasTaper(),
             drill = this.isDrill(),
+            bullnose = this.isBullnose(),
             tip_dia = this.tipDiameter(),
             flute_dia = this.fluteDiameter(),
             flute_len = this.fluteLength(),
@@ -193,6 +198,14 @@ class Tool {
                         z_offset = ((dist_from_center - pix_tip_rad_float) / tip_max_rad_offset) * -flute_len;
                     } else if (drill) {
                         z_offset = -dist_from_center / 45;
+                    } else if (bullnose) {
+                        let bullnose_rad = flute_rad - (tip_dia / 2);
+                        let distance_from_radius = (dist_from_center * resolution) - (tip_dia / 2);
+                        if (distance_from_radius > 0) {
+                            let dist_sq = distance_from_radius * distance_from_radius;
+                            let bull_rad_sq = bullnose_rad * bullnose_rad;
+                            z_offset = Math.sqrt(bull_rad_sq - dist_sq) - bullnose_rad;
+                        }
                     }
                     toolOffset.push(dx, dy, z_offset);
                 } else if (flute_len && larger_shaft && dist_from_center <= pix_sh_rad_float) {
